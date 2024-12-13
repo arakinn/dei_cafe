@@ -21,6 +21,16 @@
                     </td>
                 </tr>
             {% endfor %}
+            <!-- 席数（seat_count）を表示
+            <tr>
+                <th>{{ form.seat_count.label_tag }}</th>
+                <td>
+                    {{ form.seat_count }}
+                    {% for error in form.seat_count.errors %}
+                        <div style="color: red;">{{ error }}</div>
+                    {% endfor %}
+                </td>
+            </tr> -->
         </tbody>
     </table>
 

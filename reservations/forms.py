@@ -6,22 +6,22 @@ class ReservationForm(forms.ModelForm):
     class Meta:
         model = Reservation
         fields = [
-            'slot_index', 'customer_name', 'phone_number', 'hour',
-            'start', 'remark', 'is_preorder', 'is_eatin'
+            'customer_name', 'phone_number', 'hour', 'start', 'seat_count',
+            'remark', 'is_preorder', 'is_eatin'
         ]
         labels = {
-            'slot_index': 'お席',
-            'customer_name': '代表者名',
-            'phone_number': 'お電話番号',
-            'hour': 'お時間（最大2時間）',
-            'start': '開始時間',
-            'remark': '備考欄',
-            'is_preorder': '事前注文の有無',
-            'is_eatin': 'イートイン/テイクアウト',
+            'seat_count': '席数（最大8席）',
+            # その他のラベルは変更なし
         }
         widgets = {
             'start': forms.TextInput(attrs={'readonly': 'readonly'}),
         }
+
+    def clean_seat_count(self):
+        seat_count = self.cleaned_data.get('seat_count')
+        if seat_count is None or seat_count <= 0 or seat_count > 8:
+            raise forms.ValidationError("席数は1〜8の範囲で指定してください。")
+        return seat_count
 
     def clean_hour(self):
         hour = self.cleaned_data.get('hour')

@@ -26,15 +26,15 @@
     <tr>
         <td>{{ hour }}:00</td>
         {% for day, available in schedules.items %}
-            <td>
-                {% if day <= today %}
-                -  <!-- 過去の枠は表示しない -->
-                {% elif available %}
-                    <a href="{% url 'reserve' day.year day.month day.day hour %}">〇</a>
-                {% else %}
-                    ×
-                {% endif %}
-            </td>
+        <td>
+            {% if day <= today %}
+                - <!-- 過去の枠 -->
+            {% elif available %}
+                <a href="{% url 'reserve' day.year day.month day.day hour %}">〇</a>
+            {% else %}
+                ×
+            {% endif %}
+        </td>
         {% endfor %}
         <td>{{ hour }}:00</td>
     </tr>
