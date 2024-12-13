@@ -1,4 +1,5 @@
 import datetime
+import math
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 from typing import Any
@@ -17,7 +18,7 @@ from .forms import ReservationForm, ReservationItemForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.forms import modelformset_factory
+
 
 # Create your views here.
 
@@ -38,9 +39,9 @@ class ReservationListView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # クエリパラメータ 'phonenumber' を取得
-        phonenumber = self.request.GET.get('phonenumber', '123456789')  # デフォルト値を '123456789' に設定
-        context['phonenumber'] = phonenumber  # テンプレートに渡す
+        # クエリパラメータ 'phone_number' を取得
+        phone_number = self.request.GET.get('phone_number', '123456789')  # デフォルト値を '123456789' に設定
+        context['phone_number'] = phone_number  # テンプレートに渡す
 
         return context
 
@@ -235,31 +236,36 @@ class ReservationCompleteView(TemplateView):
 """
 
 class ReservationCompleteView(TemplateView):
-    template_name = 'reservations/reservation_complete.html'
+    def get(self, request, *args, **kwargs):
+        reservation_id = request.GET.get("reservation_id")
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+        reservation_items = ReservationItem.objects.filter(reservation=reservation)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        # 計算処理
+        reservation_details = []
+        total_excl_tax = 0
 
-        reservation_id = self.request.GET.get('reservation_id')
-        if reservation_id:
-            try:
-                reservation = Reservation.objects.prefetch_related('items__item').get(id=reservation_id)
-                context['reservation'] = reservation
+        for item in reservation_items:
+            item_total = item.item.price * item.quantity  # 小計を計算
+            total_excl_tax += item_total
+            reservation_details.append({
+                "name": item.item.name,
+                "quantity": item.quantity,
+                "price": item.item.price,
+                "total": item_total,
+            })
 
-                reservation_items = reservation.items.all()
-                context['reservation_items'] = reservation_items
+        tax_amount = total_excl_tax * 0.1  # 消費税額
+        discount_amount = (total_excl_tax + tax_amount) * 0.1  # 割引額
+        discount_amount = int(discount_amount)  # 小数点以下を切り捨て
+        total_incl_tax = total_excl_tax + tax_amount - discount_amount
 
-                # 各アイテムの合計金額を計算
-                total_price = sum(item.item.price * item.quantity for item in reservation_items)
-                context['total_price'] = total_price
-
-            except Reservation.DoesNotExist:
-                context['reservation'] = None
-                context['reservation_items'] = None
-                context['total_price'] = 0
-        else:
-            context['reservation'] = None
-            context['reservation_items'] = None
-            context['total_price'] = 0
-
-        return context
+        context = {
+            "reservation": reservation,
+            "reservation_details": reservation_details,
+            "total_excl_tax": total_excl_tax,
+            "tax_amount": tax_amount,
+            "discount_amount": discount_amount,
+            "total_incl_tax": total_incl_tax,
+        }
+        return render(request, "reservations/reservation_complete.html", context)
