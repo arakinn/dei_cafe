@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -127,3 +128,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'menu_user'
 LOGOUT_REDIRECT_URL = 'login'
+
+PUBLIC_HOLIDAYS = [
+#2025
+    datetime.date(year=2025, month=1, day=1),
+    datetime.date(year=2025, month=1, day=13),
+    datetime.date(year=2025, month=2, day=11),
+    datetime.date(year=2025, month=2, day=23),
+    datetime.date(year=2025, month=2, day=24),
+    datetime.date(year=2025, month=3, day=20),
+    datetime.date(year=2025, month=4, day=29),
+    datetime.date(year=2025, month=5, day=3),
+    datetime.date(year=2025, month=5, day=4),
+    datetime.date(year=2025, month=5, day=5), 
+    datetime.date(year=2025, month=5, day=6),
+    datetime.date(year=2025, month=7, day=21),
+    datetime.date(year=2025, month=8, day=11),
+    datetime.date(year=2025, month=9, day=15),
+    datetime.date(year=2025, month=9, day=23),
+    datetime.date(year=2025, month=10, day=13),
+    datetime.date(year=2025, month=11, day=3),
+    datetime.date(year=2025, month=11, day=23),
+    datetime.date(year=2025, month=11, day=24),   
+]

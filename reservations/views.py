@@ -30,7 +30,7 @@ class LoginView(LoginView):
 
 
 class LogoutView(LogoutView):
-    template_name = 'logout.html'
+    template_name = 'reservations/logout.html'
 
 
 class MenuUserView(TemplateView):
@@ -47,14 +47,18 @@ class ReservationListView(TemplateView):
         return context
 
 
-class CalendarView(TemplateView):
+class CalendarView(generic.TemplateView):
     template_name = 'reservations/calendar.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        today = datetime.now().date()
+        today = datetime.now().date()  # 今日の日付を取得
+        max_seats = 8  # 1時間あたりの最大席数
 
-        # URLから基準日を取得
+        # 祝日を settings.py から取得
+        public_holidays = settings.PUBLIC_HOLIDAYS
+
+        # URLから年・月・日を取得し、基準日を設定
         year = self.kwargs.get('year')
         month = self.kwargs.get('month')
         day = self.kwargs.get('day')
@@ -64,37 +68,37 @@ class CalendarView(TemplateView):
             base_date = today
 
         days = [base_date + timedelta(days=i) for i in range(7)]
-        max_seats = 8
+        start_day = days[0]
+        end_day = days[-1]
 
-        # 空席情報を初期化
-        availability = {
-            hour: {day: max_seats for day in days} for hour in range(10, 17)
-        }
+        calendar = {}
+        for hour in range(9, 17):  # 営業時間
+            row = {}
+            for day in days:
+                start_time = make_aware(datetime.combine(day, datetime.min.time().replace(hour=hour)))
+                end_time = start_time + timedelta(hours=1)
 
-        start_time = make_aware(datetime.combine(days[0], datetime.min.time().replace(hour=10)))
-        end_time = make_aware(datetime.combine(days[-1], datetime.min.time().replace(hour=17)))
+                # 予約済み席数を計算
+                reserved_seats = Reservation.objects.filter(
+                    start__lt=end_time,
+                    end__gt=start_time
+                ).aggregate(total=Sum('seat_count'))['total'] or 0
 
-        # 既存予約を基に空席情報を更新
-        for reservation in Reservation.objects.filter(start__lt=end_time, end__gt=start_time):
-            booking_hour = timezone.localtime(reservation.start).hour
-            booking_day = timezone.localtime(reservation.start).date()
-            if booking_hour in availability and booking_day in availability[booking_hour]:
-                availability[booking_hour][booking_day] -= reservation.seat_count
+                # 残り席数を計算
+                remaining_seats = max_seats - reserved_seats
+                row[day] = remaining_seats
 
-        # 席数が0以下の場合に False を設定
-        for hour, days_slots in availability.items():
-            for day, seats in days_slots.items():
-                availability[hour][day] = seats > 0
+            calendar[hour] = row
+            
+        context['public_holidays'] = public_holidays
+        context['calendar'] = calendar
+        context['days'] = days
+        context['start_day'] = start_day
+        context['end_day'] = end_day
+        context['before'] = days[0] - timedelta(days=7)
+        context['next'] = days[-1] + timedelta(days=1)
+        context['today'] = today
 
-        context.update({
-            'availability': availability,
-            'days': days,
-            'start_day': days[0],
-            'end_day': days[-1],
-            'before': days[0] - timedelta(days=7),
-            'next': days[-1] + timedelta(days=1),
-            'today': today,
-        })
         return context
 
 
