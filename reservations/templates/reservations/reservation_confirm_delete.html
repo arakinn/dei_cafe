@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}予約削除確認{% endblock %}
+
+{% block content %}
+<h1>予約削除確認</h1>
+<p>本当にこの予約を削除しますか？</p>
+
+<p><strong>予約番号:</strong> {{ reservation.id }}</p>
+<p><strong>代表者名:</strong> {{ reservation.customer_name }}</p>
+<p><strong>電話番号:</strong> {{ reservation.phone_number }}</p>
+<p><strong>予約日時:</strong> {{ reservation.start|date:"Y-m-d H:i" }} ~ {{ reservation.end|date:"H:i" }}</p>
+
+<form action="{% url 'reservation_delete' reservation.id %}" method="post">
+    {% csrf_token %}
+    <button type="submit">削除する</button>
+</form>
+
+<a href="{% url 'reservation_list' %}?phone_number={{ reservation.phone_number }}">キャンセル</a>
+{% endblock %}

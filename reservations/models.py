@@ -25,7 +25,7 @@ class Items(models.Model):
 class Reservation(models.Model):
     customer_name = models.CharField(max_length=60, verbose_name="代表者名")
     phone_number = models.CharField(max_length=15, verbose_name="お電話番号")
-    hour = models.PositiveIntegerField(verbose_name="お時間（最大2時間）")
+    hour = models.PositiveIntegerField(verbose_name="ご利用時間（最大2時間）")
     start = models.DateTimeField(verbose_name="開始時間")
     end = models.DateTimeField(verbose_name="終了時間", null=True, blank=True)
     seat_count = models.PositiveIntegerField(verbose_name="予約席数", default=1)
@@ -40,6 +40,7 @@ class Reservation(models.Model):
         if self.start and self.hour:
             self.end = self.start + timedelta(hours=self.hour)
         super().save(*args, **kwargs)
+
 class ReservationItem(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="items")
     item = models.ForeignKey(Items, on_delete=models.CASCADE)

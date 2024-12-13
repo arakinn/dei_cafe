@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}dei Cafe ログイン{% endblock %}
+{% block title %}dei Cafe お客様ログイン{% endblock %}
 {% block content %}
-<h1>dei Cafe ログイン</h1>
+<h1>dei Cafe お客様ログイン</h1>
+<a href="{% url 'register' %}">新規ユーザー登録</a>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="ログイン">
 </form>
+<br>
+<a href="{% url 'staff_login' %}">スタッフ ログイン</a>
 {% endblock %}

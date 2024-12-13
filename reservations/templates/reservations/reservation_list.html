@@ -1,6 +1,48 @@
 {% extends 'base.html' %}
+
 {% block title %}予約一覧{% endblock %}
+
 {% block content %}
-<h1>お客様の予約一覧</h1>
-<h2>{{ phone_number }}</h2>
+<h1>予約一覧</h1>
+
+{% if phone_number %}
+    <p>電話番号: {{ phone_number }}</p>
+{% endif %}
+
+{% if reservations %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>予約番号</th>
+                <th>代表者名</th>
+                <th>予約日時</th>
+                <th>席数</th>
+                <th>詳細</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+                    <td>{{ reservation.customer_name }} 様</td>
+                    <td>
+                        {{ reservation.start|date:"Y-m-d H:i" }} ~ 
+                        {{ reservation.end|date:"H:i" }}
+                    </td>
+                    <td>{{ reservation.seat_count }}</td>
+                    <td>
+                        <a href="{% url 'reservation_detail' pk=reservation.pk %}">詳細 </a>
+                        <a href="{% url 'reservation_edit' pk=reservation.pk %}">編集</a> 
+                        <a href="{% url 'reservation_delete' pk=reservation.pk %}">削除</a>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>一致する予約は見つかりませんでした。</p>
+{% endif %}
+<br>
+<a href="{% url 'menu_user' %}">メニュー画面に戻る</a>
 {% endblock %}

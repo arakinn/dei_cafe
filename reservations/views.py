@@ -6,24 +6,31 @@ from django.utils.timezone import make_aware
 from typing import Any
 from django.db.models import Q
 from django.shortcuts import render
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
+from django.utils.timezone import now
 from .models import Reservation, ReservationItem, Items
 from django.views import generic
 from django.conf import settings
 from .forms import ReservationForm, ReservationItemForm
 from django.core.exceptions import ValidationError
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .forms import UserRegistrationForm
+from django.http import HttpResponseForbidden
+from django.forms import modelformset_factory, inlineformset_factory
+from django.views import View
 
 
 # Create your views here.
 
-
+# ここから顧客用
 class LoginView(LoginView):
     form_class = AuthenticationForm
     template_name = 'reservations/login.html'
@@ -37,15 +44,99 @@ class MenuUserView(TemplateView):
     template_name = 'reservations/menu_user.html'
 
 
-class ReservationListView(TemplateView):
-    template_name = 'reservations/reservation_list.html'
+class ReservationListView(ListView):
+    model = Reservation
+    template_name = 'reservations/reservation_list.html'  # 使用するテンプレート名
+    context_object_name = 'reservations'  # テンプレートで使用するオブジェクト名
+
+    def get_queryset(self):
+        phone_number = self.request.GET.get('phone_number', '')  # URLクエリパラメータから電話番号を取得
+        if phone_number:
+            today = now().date()  # 現在の日付を取得
+            return Reservation.objects.filter(
+                phone_number=phone_number,
+                start__date__gte=today  # 今日以降の予約を取得
+            ).order_by('start')  # 予約日が近い順に並べる
+        return Reservation.objects.none()  # 電話番号が渡されていない場合は空のクエリセットを返す
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        phone_number = self.request.GET.get('phone_number', '123456789')
-        context['phone_number'] = phone_number
+        context['phone_number'] = self.request.GET.get('phone_number', '')  # テンプレートに電話番号を渡す
         return context
 
+class ReservationDetailView(TemplateView):
+    template_name = "reservations/reservation_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reservation_id = kwargs.get("pk")
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+        reservation_items = ReservationItem.objects.filter(reservation=reservation)
+
+        # 注文メニューの詳細を計算
+        reservation_details = []
+        total_excl_tax = 0
+
+        for item in reservation_items:
+            item_total = item.item.price * item.quantity  # 小計
+            total_excl_tax += item_total
+            reservation_details.append({
+                "name": item.item.name,
+                "quantity": item.quantity,
+                "price": item.item.price,
+                "total": item_total,
+            })
+
+        tax_amount = total_excl_tax * 0.1  # 消費税額
+        discount_amount = int((total_excl_tax + tax_amount) * 0.1)  # 割引額（切り捨て）
+        total_incl_tax = total_excl_tax + tax_amount - discount_amount
+
+        # コンテキストに追加
+        context.update({
+            "reservation": reservation,
+            "reservation_details": reservation_details,
+            "total_excl_tax": total_excl_tax,
+            "tax_amount": tax_amount,
+            "discount_amount": discount_amount,
+            "total_incl_tax": total_incl_tax,
+        })
+
+        return context
+
+class ReservationEditView(UpdateView):
+    model = Reservation
+    form_class = ReservationForm
+    template_name = 'reservations/reservation_edit.html'
+
+    def get_object(self):
+        reservation_id = self.kwargs.get('pk')
+        return get_object_or_404(Reservation, id=reservation_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reservation = self.get_object()
+        reservation_items = reservation.items.all()
+        context['reservation_items'] = reservation_items
+        return context
+
+    def form_valid(self, form):
+        reservation = form.save(commit=False)
+
+        # 予約内容を保存
+        reservation.save()
+
+        # 既存の注文を削除（重複しないように）
+        reservation.items.all().delete()
+
+        # 注文メニューを保存（フォームから入力された数量を使って）
+        form.save_menus(reservation)
+
+        # 予約詳細ページへリダイレクト
+        return redirect('reservation_detail', pk=reservation.id)
+
+class ReservationDeleteView(DeleteView):
+    model = Reservation
+    success_url = reverse_lazy('reservation_list')
 
 class CalendarView(generic.TemplateView):
     template_name = 'reservations/calendar.html'
@@ -89,7 +180,7 @@ class CalendarView(generic.TemplateView):
                 row[day] = remaining_seats
 
             calendar[hour] = row
-            
+
         context['public_holidays'] = public_holidays
         context['calendar'] = calendar
         context['days'] = days
@@ -100,7 +191,6 @@ class CalendarView(generic.TemplateView):
         context['today'] = today
 
         return context
-
 
 
 class ReservationView(CreateView):
@@ -191,3 +281,42 @@ class ReservationCompleteView(TemplateView):
         })
 
         return context
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+
+            # 新規ユーザーを作成
+            user = User.objects.create_user(username=username, password=password)
+
+            # ユーザーが作成されたことを通知
+            messages.success(request, f'{username} さん、アカウントが作成されました！')
+
+            return redirect('login')  # ログインページにリダイレクト
+
+    else:
+        form = UserRegistrationForm()
+
+    return render(request, 'reservations/register.html', {'form': form})
+
+
+
+# ここから店舗用
+class StaffLoginView(LoginView):
+    template_name = 'reservations/staff_login.html'  # スタッフ用ログインページ
+    form_class = AuthenticationForm
+
+    def form_valid(self, form):
+        user = form.get_user()
+        if not user.is_staff:  # スタッフ権限を確認
+            return HttpResponseForbidden("スタッフ専用ページです。ログインできません。")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return '/menu_shop/'  # スタッフログイン後のリダイレクト先
+
+class MenuShopView(TemplateView):
+    template_name = 'reservations/menu_shop.html'
