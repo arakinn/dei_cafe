@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>ご予約ありがとうございました！</h1>
-{% if reservation %}
+
 <p>以下の内容で予約が確定しました:</p>
 <ul>  
     <li><strong>予約番号:</strong> {{ reservation.id }}</li>
@@ -12,8 +12,6 @@
     <li><strong>事前注文:</strong> {{ reservation.get_is_preorder_display }}</li>
     <li><strong>イートイン/テイクアウト:</strong> {{ reservation.get_is_eatin_display }}</li>
 </ul>
-{% else %}
-<p>予約情報が見つかりませんでした。</p>
-{% endif %}
+
 <a href="{% url 'menu_user' %}">メニュー画面に戻る</a>
 {% endblock %}

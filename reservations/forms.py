@@ -71,3 +71,8 @@ class ReservationForm(forms.ModelForm):
                         quantity=quantity
                     )
         return items
+
+class ReservationItemForm(forms.ModelForm):
+    class Meta:
+        model = ReservationItem
+        fields = ['item', 'quantity']

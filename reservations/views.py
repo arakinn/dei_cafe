@@ -10,15 +10,18 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
-from .models import Reservation
+from .models import Reservation, ReservationItem, Items
 from django.views import generic
 from django.conf import settings
-from .forms import ReservationForm
+from .forms import ReservationForm, ReservationItemForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.forms import modelformset_factory
 
 # Create your views here.
+
+
 class LoginView(LoginView):
     form_class = AuthenticationForm
     template_name = 'reservations/login.html'
@@ -167,41 +170,50 @@ class ReservationView(CreateView):
         return context
 
     def form_valid(self, form):
-        print("フォームは有効です:", form.is_valid())
-        reservation = form.save(commit=False)
-    
-        # 予約の保存
-        reservation.save()
-
-        # メニュー項目の保存
-        form.save_menus(reservation)
+        reservation = form.save(commit=False)  # 一時的に保存（まだDBには書き込まない）
 
         # 終了時間を計算
         reservation.end = reservation.start + timedelta(hours=reservation.hour)
 
-       # 同じ時間帯、同じ席がすでに予約されていないか確認
-        print(f"予約の席番号: {reservation.slot_index}")  # 席番号が正しいか確認
-        print(f"予約の開始: {reservation.start}, 終了: {reservation.end}")
-        conflicting_reservation = Reservation.objects.filter(
+        # 同じ時間帯、同じ席の予約がないか確認
+        conflicting_reservations = Reservation.objects.filter(
             start__lt=reservation.end,  # 現在の予約の終了時刻より早く開始する予約
             end__gt=reservation.start,  # 現在の予約の開始時刻より遅く終了する予約
             slot_index=reservation.slot_index  # 同じ席番号
         ).exclude(id=reservation.id)  # 自分自身を除外
 
-        print(f"チェック対象の予約: {list(conflicting_reservation)}")  # デバッグ用に出力
-        if conflicting_reservation.exists():
+        if conflicting_reservations.exists():
+            # フォームにエラーを追加
             form.add_error(None, "この時間帯、この席はすでに予約されています。他の席を選択してください。")
-            print("重複する予約:", conflicting_reservation)
-            return self.form_invalid(form)
+            return self.form_invalid(form)  # エラー時は保存せず、フォームを再表示
 
-        # 予約が重複していない場合は保存
+        # 予約情報を保存
         reservation.save()
 
-        # 予約完了ページにリダイレクト
-        print(f"予約完了ページにリダイレクト: reservation_id={reservation.id}")
+        # 注文メニュー (ReservationItem) を保存
+        for field_name, field_value in self.request.POST.items():
+            if field_name.startswith('item_'):
+                try:
+                    item_id = field_name.split('_')[1]  # item_ の後に続くID
+                    quantity = int(field_value)
+
+                    if quantity > 0:  # quantity が 0 より大きい場合のみ保存
+                        # ReservationItem を作成
+                        item = Items.objects.get(id=item_id)
+                        reservation_item = ReservationItem(
+                            reservation=reservation,
+                            item=item,
+                            quantity=quantity
+                        )
+                        reservation_item.save()
+
+                except (ValueError, IndexError, Items.DoesNotExist):
+                    continue  # エラーがあれば無視して次へ進む
+
+    # 予約完了ページにリダイレクト
         return redirect(reverse('complete') + f'?reservation_id={reservation.id}')
 
-
+"""
 class ReservationCompleteView(TemplateView):
     template_name = 'reservations/reservation_complete.html'
 
@@ -218,5 +230,36 @@ class ReservationCompleteView(TemplateView):
                 context['reservation'] = None
         else:
             context['reservation'] = None
+
+        return context
+"""
+
+class ReservationCompleteView(TemplateView):
+    template_name = 'reservations/reservation_complete.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        reservation_id = self.request.GET.get('reservation_id')
+        if reservation_id:
+            try:
+                reservation = Reservation.objects.prefetch_related('items__item').get(id=reservation_id)
+                context['reservation'] = reservation
+
+                reservation_items = reservation.items.all()
+                context['reservation_items'] = reservation_items
+
+                # 各アイテムの合計金額を計算
+                total_price = sum(item.item.price * item.quantity for item in reservation_items)
+                context['total_price'] = total_price
+
+            except Reservation.DoesNotExist:
+                context['reservation'] = None
+                context['reservation_items'] = None
+                context['total_price'] = 0
+        else:
+            context['reservation'] = None
+            context['reservation_items'] = None
+            context['total_price'] = 0
 
         return context

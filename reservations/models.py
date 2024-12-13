@@ -1,4 +1,3 @@
-
 import datetime
 from datetime import timedelta
 from django.conf import settings
@@ -7,11 +6,11 @@ from django.utils import timezone
 
 # Create your models here.
 
-class Seat(models.Model):
-    number = models.IntegerField(unique=True)  # 座席番号
-
-    def __str__(self):
-        return f"Seat {self.number}"
+#class Seat(models.Model):
+#    number = models.IntegerField(unique=True)  # 座席番号
+#
+#    def __str__(self):
+#        return f"Seat {self.number}"
 
 
 class Items(models.Model):
@@ -37,6 +36,14 @@ class Reservation(models.Model):
     RESERVATION_IS_EATIN = ((1, 'イートイン'), (2, 'テイクアウト'))
     is_eatin = models.IntegerField(choices=RESERVATION_IS_EATIN, verbose_name="イートイン/テイクアウト")
     menu_items = models.ManyToManyField(Items, through='ReservationItem', verbose_name="注文メニュー")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['slot_index', 'start'],
+                name='unique_reservation_per_slot_and_time'
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         if self.start and self.hour:
