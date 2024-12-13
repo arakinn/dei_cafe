@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}予約フォーム{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <h3>予約情報</h3>
+    <table>
+        <tbody>
+            {% for field in other_fields %}
+                <tr>
+                    <th>{{ field.label_tag }}</th>
+                    <td>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <div style="color: red;">{{ error }}</div>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>注文メニュー</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>メニュー</th>
+                <th>数量</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for field in items_fields %}
+                <tr>
+                    <td>{{ field.label }}</td>
+                    <td>{{ field }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <input type="submit" value="予約する">
+</form>
+{% endblock %}

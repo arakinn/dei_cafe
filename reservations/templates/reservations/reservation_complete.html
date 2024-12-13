@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}予約完了{% endblock %}
+
+{% block content %}
+<h1>ご予約ありがとうございました！</h1>
+{% if reservation %}
+<p>以下の内容で予約が確定しました:</p>
+<ul>  
+    <li><strong>予約番号:</strong> {{ reservation.id }}</li>
+    <li><strong>代表者名:</strong> {{ reservation.customer_name }}</li>
+    <li><strong>予約日時:</strong> {{ reservation.start|date:"Y-m-d H:i" }} ~ {{ reservation.end|date:"H:i" }}</li>
+    <li><strong>事前注文:</strong> {{ reservation.get_is_preorder_display }}</li>
+    <li><strong>イートイン/テイクアウト:</strong> {{ reservation.get_is_eatin_display }}</li>
+</ul>
+{% else %}
+<p>予約情報が見つかりませんでした。</p>
+{% endif %}
+<a href="{% url 'menu_user' %}">メニュー画面に戻る</a>
+{% endblock %}
