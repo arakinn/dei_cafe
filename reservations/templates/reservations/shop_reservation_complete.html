@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load humanize %}
 {% block content %}
-<h2>予約完了</h2>
+<h2>店舗側 予約完了</h2>
 
 {% if reservation %}
   <ul>
@@ -17,23 +17,22 @@
   {% if reservation_details %}
     <ul>
       {% for item in reservation_details %}
-        <li>{{ item.name }} x {{ item.quantity }} (¥{{ item.total|floatformat:0|intcomma }})</li>
+        <li>{{ item.name }} x {{ item.quantity }} (¥{{ item.total|floatformat:0 }})</li>
       {% endfor %}
     </ul>
 
-    <!-- 金額の表示 -->
-    <h4>税抜き合計金額: ¥{{ total_excl_tax|floatformat:0|intcomma }}</h4>
-    <h4>消費税額(10%): +¥{{ tax_amount|floatformat:0|intcomma }}</h4>
-    <h4 style="color: green;">10%オフクーポン: -¥{{ discount_amount|floatformat:0|intcomma }}</h4>
-    <h4>-------------------------</h4>
-    <h4>合計金額: ¥{{ total_incl_tax|floatformat:0|intcomma }}</h4>
-    <p>お会計時にこの画面をスタッフにお見せください。</p>
-  {% else %}
-    <p>注文はありません。</p>
-  {% endif %}
+  <!-- 金額の表示 -->
+  <h4>税抜き合計金額: ¥{{ total_excl_tax|floatformat:0|intcomma }}</h4>
+  <h4>消費税額(10%): +¥{{ tax_amount|floatformat:0|intcomma }}</h4>
+  <h4 style="color: green;">10%オフクーポン: -¥{{ discount_amount|floatformat:0|intcomma }}</h4>
+  <h4>-------------------------</h4>
+  <h4>合計金額: ¥{{ total_incl_tax|floatformat:0|intcomma }}</h4>
+{% else %}
+  <p>注文はありません。</p>
+{% endif %}
 {% else %}
   <p>予約情報が見つかりませんでした。</p>
 {% endif %}
 
-<a href="{% url 'menu_user' %}">メニュー画面に戻る</a>
+<a href="{% url 'menu_shop' %}">店舗用 メニュー画面に戻る</a>
 {% endblock %}

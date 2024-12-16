@@ -19,7 +19,7 @@ from django.urls import path
 from reservations import views
 from django.contrib.auth.views import LoginView, LogoutView
 from reservations.views import LoginView
-from reservations.views import ReservationView, ReservationCompleteView, ReservationDetailView, ReservationDeleteView
+from reservations.views import ReservationView, ReservationCompleteView, ReservationDetailView, ReservationDeleteView, AllReservationsListView, ShopReservationView, ShopReservationCompleteView
 
 urlpatterns = [
     #ここから顧客用
@@ -28,9 +28,9 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name="logout"),
     path('menu_user/', views.MenuUserView.as_view(), name="menu_user"),
     path('reserve/list/', views.ReservationListView.as_view(), name="reservation_list"),
-    path('detail/<int:pk>/', ReservationDetailView.as_view(), name="reservation_detail"),
-    path('edit/<int:pk>/', views.ReservationEditView.as_view(), name="reservation_edit"),
-    path('delete/<int:pk>/', ReservationDeleteView.as_view(), name="reservation_delete"),
+    path('reserve/detail/<int:pk>/', ReservationDetailView.as_view(), name="reservation_detail"),
+    path('reserve/edit/<int:pk>/', views.ReservationEditView.as_view(), name="reservation_edit"),
+    path('reserve/delete/<int:pk>/', ReservationDeleteView.as_view(), name="reservation_delete"),
     path('calendar/', views.CalendarView.as_view(), name="calendar"),
     path('calendar/<int:year>/<int:month>/<int:day>/', views.CalendarView.as_view(), name="calendar"),
     path('reserve/<int:year>/<int:month>/<int:day>/<int:hour>/', views.ReservationView.as_view(), name="reserve"),
@@ -39,4 +39,9 @@ urlpatterns = [
     #ここから店舗用
     path('staff_login/', views.StaffLoginView.as_view(), name="staff_login"),
     path('menu_shop/', views.MenuShopView.as_view(), name="menu_shop"),
+    path('menu_shop/list/', views.AllReservationsListView.as_view(), name="menu_shop_list"),
+    path('menu_shop/calendar/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
+    path('menu_shop/calendar/<int:year>/<int:month>/<int:day>/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
+    path('menu_shop/reserve/<int:year>/<int:month>/<int:day>/<int:hour>/',ShopReservationView.as_view(),name="menu_shop_reserve"),
+    path('menu_shop/complete/', views.ShopReservationCompleteView.as_view(), name="menu_shop_complete"),
 ]

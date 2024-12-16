@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トップページ</title>
+    <!-- Tailwind CSS CDN (for quick demo purposes) -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        // フォーム送信時に空白を削除する関数
+        function removeSpaces() {
+            const username = document.getElementById("username");
+            // 半角空白と全角空白を削除
+            username.value = username.value.replace(/[ 　]/g, '');
+        }
+    </script>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+<!--
+<div class="bg-white p-8 rounded shadow-md w-96">
+    <h2 class="text-2xl font-semibold mb-6">ログイン</h2>
+
+    <form>
+        <div class="mb-4">
+        <form onsubmit="return validateForm()">
+            <label for="username" class="block text-sm font-medium text-gray-600">お名前</label>
+            <input type="text" id="username" name="username" class="mt-1 p-2 w-full border rounded-md" required>
+        </div>
+
+        <div class="flex justify-between">
+          
+            <button type="submit" formaction="{% url 'menu_user' %}" class="bg-blue-500 text-white p-2 rounded-md w-1/2">ログイン</button>
+            <button type="submit" formaction="./menu_cafe.html" class="bg-green-500 text-white p-2 rounded-md w-1/2">店舗ログイン</button>
+        </div>
+        </form>
+</div>
+</body>
+</html>
+-->
+
+<div class="bg-white p-8 rounded shadow-md w-96">
+    <h2 class="text-2xl font-semibold mb-6">ログイン</h2>
+    <form onsubmit="removeSpaces()">
+        <div class="mb-4">
+            <label for="username" class="block text-sm font-medium text-gray-600">お名前</label>
+            <input type="text" id="username" name="username" class="mt-1 p-2 w-full border rounded-md" required>
+        </div>
+        <div class="flex justify-between">
+            <button type="submit" formaction="{% url 'menu_user' %}" class="bg-blue-500 text-white p-2 rounded-md w-1/2">送信</button>
+            <button type="submit" formaction="./menu_cafe.html" class="bg-green-500 text-white p-2 rounded-md w-1/2">店舗ログイン</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>
+

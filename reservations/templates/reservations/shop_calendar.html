@@ -3,7 +3,7 @@
 
 {% block title %}カレンダー{% endblock %}
 {% block content %}
-<h1>空席確認</h1>
+<h1>店舗用 空席確認</h1>
 <p>{{ start_day }} - {{ end_day }}</p>
 <table style="table-layout: fixed; width: 80%;" border="1">
     <tr>
@@ -28,15 +28,15 @@
             {% for day, remaining_seats in schedules.items %}
                 <td>
                     {% if day in public_holidays %}
-                        -  <!-- 祝日は休み -->
+                        -  <!-- 祝日は休みで - 表示 -->
                     {% elif day.weekday == 5 or day.weekday == 6 %}
                         -  <!-- 土日は休み -->
                     {% elif day <= today %}
                         -  <!-- 過去の枠は表示しない -->
                     {% elif remaining_seats > 0 %}
-                        <a href="{% url 'reserve' day.year day.month day.day hour %}">
-                            残り{{ remaining_seats }}席
-                        </a>
+                    <a href="{% url 'menu_shop_reserve' day.year day.month day.day hour %}">
+                        残り{{ remaining_seats }}席
+                    </a>
                     {% else %}
                         満席
                     {% endif %}
@@ -47,5 +47,5 @@
     {% endfor %}
 </table>
 <br>
-<a href="{% url 'menu_user' %}">メニュー画面に戻る</a>
+<a href="{% url 'menu_shop' %}">メニュー画面に戻る</a>
 {% endblock %}
