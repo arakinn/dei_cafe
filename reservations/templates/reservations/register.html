@@ -1,9 +1,12 @@
-{% extends 'base.html' %}
-
-{% block title %}新規ユーザー登録{% endblock %}
-
-{% block content %}
-<h2>新規ユーザー登録</h2>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規ユーザー登録</title>
+</head>
+<body>
+<h1>新規ユーザー登録</h1>
 
 <form method="POST">
     {% csrf_token %}
@@ -14,4 +17,5 @@
 <br>
 <a href="{% url 'login' %}">戻る</a>
 
-{% endblock %}
+</body>
+</html>

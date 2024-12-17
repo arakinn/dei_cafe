@@ -62,7 +62,7 @@ class ReservationForm(forms.ModelForm):
             total_reserved_seats = Reservation.objects.filter(
                 start__lt=end_time,
                 end__gt=start_time
-            ).aggregate(models.Sum('seat_count'))['seat_count__sum'] or 0  # ここで models.Sum を使用
+            ).aggregate(models.Sum('seat_count'))['seat_count__sum'] or 0
 
             remaining_seats = 8 - total_reserved_seats  # 最大8席
 
@@ -72,7 +72,7 @@ class ReservationForm(forms.ModelForm):
         
             # 終了時間 (end) が17:00を超えている場合にエラーを追加
             if end_time.hour > 17:  # 終了時間が17時を超える場合
-                self.add_error('hour', 'ご利用時間は17時までに収めてください。')
+                self.add_error('hour', 'ご利用終了時間は17時までに収めてください。')
 
         # 事前注文の場合に注文が0の時エラー
         if is_preorder == 1:  # 事前注文が選ばれている場合
@@ -203,7 +203,7 @@ class ShopReservationForm(forms.ModelForm):
             if start_time:
                 end_time = start_time + timedelta(hours=hour)
                 if end_time.hour > 17:  # 終了時間が17時を超える場合
-                    self.add_error('hour', 'ご利用時間は17時までに収めてください。')
+                    self.add_error('hour', 'ご利用終了時間は17時までに収めてください。')
 
         return cleaned_data
     

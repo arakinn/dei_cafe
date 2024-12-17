@@ -1,6 +1,11 @@
-{% extends 'base.html' %}
-{% block title %}dei Cafe お客様ログイン{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dei Cafe お客様ログイン</title>
+</head>
+<body>
 <h1>dei Cafe お客様ログイン</h1>
 <a href="{% url 'register' %}">新規ユーザー登録</a>
 <form method="post">
@@ -10,4 +15,5 @@
 </form>
 <br>
 <a href="{% url 'staff_login' %}">スタッフ ログイン</a>
-{% endblock %}
+</body>
+</html>

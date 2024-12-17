@@ -27,7 +27,6 @@ from django.forms import modelformset_factory, inlineformset_factory
 from django.views import View
 from django.db import models
 
-
 # Create your views here.
 ###################################################################################
 # ここから顧客用
@@ -225,8 +224,9 @@ class ReservationView(LoginRequiredMixin, CreateView):
         context['items_fields'] = items_fields
         context['other_fields'] = other_fields
 
-        form = context.get('form') #席数が残り席数より多くてもエラーが出ない件デバッグ用
-        #if form:
+        #席数が残り席数より多くてもエラーが出ない件デバッグ用
+        form = context.get('form') 
+        #if form:　
         #    print("フォームの内容:", form)
         #    print("非フィールドエラー:", form.non_field_errors())
         #    print("すべてのエラー:", form.errors)
@@ -308,9 +308,6 @@ def register(request):
 
             # 新規ユーザーを作成
             user = User.objects.create_user(username=username, password=password)
-
-            # ユーザーが作成されたことを通知
-            messages.success(request, f'{username} さん、アカウントが作成されました！')
 
             return redirect('login')  # ログインページにリダイレクト
 
@@ -555,10 +552,6 @@ class ItemUpdateView(UpdateView):
     def form_valid(self, form):
         # 保存前に追加の処理が必要な場合はここで行う
         return super().form_valid(form)
-
-from django.views.generic import DeleteView
-from .models import Items
-from django.urls import reverse_lazy
 
 class ItemDeleteView(DeleteView):
     model = Items

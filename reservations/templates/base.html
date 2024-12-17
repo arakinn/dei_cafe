@@ -6,6 +6,12 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+<div>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <input class="nav-link" type="submit" value="ログアウト">
+    </form>
+</div>
 {% block content %}
 {% endblock %}
 </body>
