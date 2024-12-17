@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 from typing import Any
 from django.shortcuts import render
-from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -25,6 +25,7 @@ from .forms import UserRegistrationForm
 from django.http import HttpResponseForbidden
 from django.forms import modelformset_factory, inlineformset_factory
 from django.views import View
+from django.db import models
 
 
 # Create your views here.
@@ -64,6 +65,7 @@ class ReservationListView(LoginRequiredMixin, ListView):
         context['phone_number'] = self.request.GET.get('phone_number', '')  # テンプレートに電話番号を渡す
         return context
 
+
 class ReservationDetailView(LoginRequiredMixin, TemplateView):
     template_name = "reservations/reservation_detail.html"
 
@@ -87,8 +89,8 @@ class ReservationDetailView(LoginRequiredMixin, TemplateView):
                 "total": item_total,
             })
 
-        tax_amount = total_excl_tax * 0.1  # 消費税額
-        discount_amount = int((total_excl_tax + tax_amount) * 0.1)  # 割引額（切り捨て）
+        tax_amount = math.floor(total_excl_tax * 0.1)  # 消費税額（切り捨て）
+        discount_amount = math.floor((total_excl_tax + tax_amount) * 0.1)  # 割引額（切り捨て）
         total_incl_tax = total_excl_tax + tax_amount - discount_amount
 
         # コンテキストに追加
@@ -223,6 +225,13 @@ class ReservationView(LoginRequiredMixin, CreateView):
         context['items_fields'] = items_fields
         context['other_fields'] = other_fields
 
+        form = context.get('form') #席数が残り席数より多くてもエラーが出ない件デバッグ用
+        if form:
+            print("フォームの内容:", form)
+            print("非フィールドエラー:", form.non_field_errors())
+            print("すべてのエラー:", form.errors)
+        else:
+            print("フォームが context にありません。")
         return context
 
     def form_valid(self, form):
@@ -236,19 +245,18 @@ class ReservationView(LoginRequiredMixin, CreateView):
         ).aggregate(Sum('seat_count'))['seat_count__sum'] or 0
 
         if total_reserved_seats + reservation.seat_count > 8:
-            form.add_error(None, "この時間帯の席数が不足しています。")
-            print("フォームにエラーがあります(form_valid内)", form.errors)  # デバッグ用
-            return self.form_invalid(form)
+            form.add_error(None, "この時間帯の席数が不足しています。")  # 非フィールドエラーを追加
+            return self.form_invalid(form)  # 必ず form_invalid を呼ぶ
 
         reservation.save()
         form.save_menus(reservation)
 
         return redirect(reverse('complete') + f'?reservation_id={reservation.id}')
+    
+    def form_invalid(self, form):
 
-
-def form_invalid(self, form):
-    print("フォームにエラーがあります(form_invalid)", form.errors)  # デバッグ用
-    return self.render_to_response(self.get_context_data(form=form))
+        # フォームエラーをコンテキストに渡す
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class ReservationCompleteView(LoginRequiredMixin, TemplateView):
@@ -273,7 +281,7 @@ class ReservationCompleteView(LoginRequiredMixin, TemplateView):
                 "total": item_total,
             })
 
-        tax_amount = total_excl_tax * 0.1
+        tax_amount = math.floor(total_excl_tax * 0.1)
         discount_amount = math.floor((total_excl_tax + tax_amount) * 0.1)
         total_incl_tax = total_excl_tax + tax_amount - discount_amount
 
@@ -288,6 +296,9 @@ class ReservationCompleteView(LoginRequiredMixin, TemplateView):
 
         return context
 
+###################################################################################
+# 新規ユーザー登録
+###################################################################################
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -332,6 +343,7 @@ class AllReservationsListView(LoginRequiredMixin, ListView):
     model = Reservation
     template_name = 'reservations/all_reservations_list.html'  # 使用するテンプレート
     context_object_name = 'reservations'  # テンプレートで使用するオブジェクト名
+    paginate_by = 10
 
     def get_queryset(self):
         # 現在の日時から2時間前までの予約を含む
@@ -465,10 +477,49 @@ class ShopReservationCompleteView(LoginRequiredMixin, TemplateView):
                 "total": item_total,
             })
 
-        tax_amount = total_excl_tax * 0.1
-        discount_amount = math.floor((total_excl_tax + tax_amount) * 0.1)
+        tax_amount = math.floor(total_excl_tax * 0.1) #消費税小数点以下切り捨て
+        discount_amount = math.floor((total_excl_tax + tax_amount) * 0.1) #割引額小数点以下切り捨て
         total_incl_tax = total_excl_tax + tax_amount - discount_amount
 
+        context.update({
+            "reservation": reservation,
+            "reservation_details": reservation_details,
+            "total_excl_tax": total_excl_tax,
+            "tax_amount": tax_amount,
+            "discount_amount": discount_amount,
+            "total_incl_tax": total_incl_tax,
+        })
+
+        return context
+
+class ShopReservationDetailView(LoginRequiredMixin, TemplateView):
+    template_name = "reservations/shop_reservation_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reservation_id = kwargs.get("pk")
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+        reservation_items = ReservationItem.objects.filter(reservation=reservation)
+
+        # 注文メニューの詳細を計算
+        reservation_details = []
+        total_excl_tax = 0
+
+        for item in reservation_items:
+            item_total = item.item.price * item.quantity  # 小計
+            total_excl_tax += item_total
+            reservation_details.append({
+                "name": item.item.name,
+                "quantity": item.quantity,
+                "price": item.item.price,
+                "total": item_total,
+            })
+
+        tax_amount = math.floor(total_excl_tax * 0.1)  # 消費税額（切り捨て）
+        discount_amount = math.floor((total_excl_tax + tax_amount) * 0.1)  # 割引額（切り捨て）
+        total_incl_tax = total_excl_tax + tax_amount - discount_amount
+
+        # コンテキストに追加
         context.update({
             "reservation": reservation,
             "reservation_details": reservation_details,

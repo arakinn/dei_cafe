@@ -40,6 +40,7 @@ urlpatterns = [
     path('staff_login/', views.StaffLoginView.as_view(), name="staff_login"),
     path('menu_shop/', views.MenuShopView.as_view(), name="menu_shop"),
     path('menu_shop/list/', views.AllReservationsListView.as_view(), name="menu_shop_list"),
+    path('menu_shop/detail/<int:pk>/', views.ShopReservationDetailView.as_view(), name="menu_shop_detail"),
     path('menu_shop/calendar/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
     path('menu_shop/calendar/<int:year>/<int:month>/<int:day>/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
     path('menu_shop/reserve/<int:year>/<int:month>/<int:day>/<int:hour>/',ShopReservationView.as_view(),name="menu_shop_reserve"),

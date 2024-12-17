@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}予約一覧{% endblock %}
+{% block title %}本日以降の予約一覧{% endblock %}
 
 {% block content %}
-<h1>予約一覧</h1>
+<h1>本日以降の予約一覧</h1>
 
 {% if phone_number %}
     <p>電話番号: {{ phone_number }}</p>
@@ -34,7 +34,6 @@
                         <a href="{% url 'reservation_detail' pk=reservation.pk %}">詳細</a> 
                         <a href="{% url 'reservation_edit' pk=reservation.pk %}">編集</a> 
                         <a href="{% url 'reservation_delete' pk=reservation.pk %}">削除</a>
-                        </form>
                     </td>
                 </tr>
             {% endfor %}

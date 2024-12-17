@@ -31,8 +31,6 @@
                         -  <!-- 祝日は休みで - 表示 -->
                     {% elif day.weekday == 5 or day.weekday == 6 %}
                         -  <!-- 土日は休み -->
-                    {% elif day <= today %}
-                        -  <!-- 過去の枠は表示しない -->
                     {% elif remaining_seats > 0 %}
                     <a href="{% url 'menu_shop_reserve' day.year day.month day.day hour %}">
                         残り{{ remaining_seats }}席

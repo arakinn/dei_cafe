@@ -6,12 +6,6 @@ from django.utils import timezone
 
 # Create your models here.
 
-#class Seat(models.Model):
-#    number = models.IntegerField(unique=True)  # 座席番号
-#
-#    def __str__(self):
-#        return f"Seat {self.number}"
-
 
 class Items(models.Model):
     category = models.CharField(max_length=100)

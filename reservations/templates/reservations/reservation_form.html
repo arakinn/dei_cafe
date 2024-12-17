@@ -1,11 +1,20 @@
 {% extends 'base.html' %}
 
-{% block title %}予約フォーム{% endblock %}
+{% block title %}予約情報{% endblock %}
 
 {% block content %}
+
 <form method="post">
     {% csrf_token %}
-    {{ form.non_field_errors }}
+
+    <!-- 非フィールドエラーを表示 -->
+    {% if form.non_field_errors %}
+        <p style="color: red;">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+        </p>
+    {% endif %}
 
     <h3>予約情報</h3>
     <p>テイクアウトの方はご利用時間を0にしてください。</p>
