@@ -8,10 +8,10 @@ from django.utils import timezone
 
 
 class Items(models.Model):
-    category = models.CharField(max_length=100)
-    name = models.CharField(max_length=200)
-    price = models.IntegerField()
-    sort = models.IntegerField()
+    category = models.CharField(max_length=100, verbose_name="カテゴリ")
+    name = models.CharField(max_length=200, verbose_name="品名")
+    price = models.IntegerField(verbose_name="価格（税抜）")
+    sort = models.IntegerField(verbose_name="ソート用")
 
     def __str__(self):
         return self.name

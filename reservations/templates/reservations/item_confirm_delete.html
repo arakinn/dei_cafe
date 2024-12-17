@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>メニュー削除確認</h1>
+    <p>本当にこのメニューを削除しますか？</p>
+    <p>メニュー名: {{ object.name }}</p>
+    <p>価格: ¥{{ object.price }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">削除</button>
+        <a href="{% url 'menu' %}">キャンセル</a>
+    </form>
+{% endblock %}

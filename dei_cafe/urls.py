@@ -19,7 +19,7 @@ from django.urls import path
 from reservations import views
 from django.contrib.auth.views import LoginView, LogoutView
 from reservations.views import LoginView
-from reservations.views import ReservationView, ReservationCompleteView, ReservationDetailView, ReservationDeleteView, AllReservationsListView, ShopReservationView, ShopReservationCompleteView
+from reservations.views import ReservationView, ReservationCompleteView, ReservationDetailView, ReservationDeleteView, AllReservationsListView, ShopReservationView, ShopReservationCompleteView, ItemListView, ItemCreateView, ItemUpdateView, ItemDeleteView
 
 urlpatterns = [
     #ここから顧客用
@@ -45,4 +45,8 @@ urlpatterns = [
     path('menu_shop/calendar/<int:year>/<int:month>/<int:day>/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
     path('menu_shop/reserve/<int:year>/<int:month>/<int:day>/<int:hour>/',ShopReservationView.as_view(),name="menu_shop_reserve"),
     path('menu_shop/complete/', views.ShopReservationCompleteView.as_view(), name="menu_shop_complete"),
+    path('menu/', views.ItemListView.as_view(), name='menu'),  # メニュー一覧
+    path('menu/create/', views.ItemCreateView.as_view(), name='menu_create'),  # メニュー新規作成
+    path('menu/<int:pk>/edit/', views.ItemUpdateView.as_view(), name='menu_edit'),  # メニュー編集
+    path('menu/<int:pk>/delete/', views.ItemDeleteView.as_view(), name='menu_delete'),  # メニュー削除
 ]

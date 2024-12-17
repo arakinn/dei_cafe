@@ -229,3 +229,8 @@ class ShopReservationForm(forms.ModelForm):
                         item=item,
                         quantity=quantity
                     )
+
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Items
+        fields = ['name', 'price', 'category', 'sort']

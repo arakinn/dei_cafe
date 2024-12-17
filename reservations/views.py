@@ -15,7 +15,7 @@ from django.utils.timezone import now
 from .models import Reservation, ReservationItem, Items
 from django.views import generic
 from django.conf import settings
-from .forms import ReservationForm, ReservationItemForm, ShopReservationForm
+from .forms import ReservationForm, ReservationItemForm, ShopReservationForm, ItemForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
@@ -226,12 +226,12 @@ class ReservationView(LoginRequiredMixin, CreateView):
         context['other_fields'] = other_fields
 
         form = context.get('form') #席数が残り席数より多くてもエラーが出ない件デバッグ用
-        if form:
-            print("フォームの内容:", form)
-            print("非フィールドエラー:", form.non_field_errors())
-            print("すべてのエラー:", form.errors)
-        else:
-            print("フォームが context にありません。")
+        #if form:
+        #    print("フォームの内容:", form)
+        #    print("非フィールドエラー:", form.non_field_errors())
+        #    print("すべてのエラー:", form.errors)
+        #else:
+        #    print("フォームが context にありません。")
         return context
 
     def form_valid(self, form):
@@ -530,3 +530,37 @@ class ShopReservationDetailView(LoginRequiredMixin, TemplateView):
         })
 
         return context
+
+class ItemListView(ListView):
+    model = Items
+    template_name = 'reservations/item_list.html'
+    context_object_name = 'items'  # テンプレート内で使う変数名
+
+class ItemCreateView(CreateView):
+    model = Items
+    form_class = ItemForm  # 使用するフォーム
+    template_name = 'reservations/item_form.html'
+    success_url = '/menu/'  # 成功後のリダイレクト先
+
+    def form_valid(self, form):
+        # 保存前に追加の処理が必要な場合はここで行う
+        return super().form_valid(form)
+
+class ItemUpdateView(UpdateView):
+    model = Items
+    form_class = ItemForm
+    template_name = 'reservations/item_form.html'
+    success_url = '/menu/'  # 編集後のリダイレクト先
+
+    def form_valid(self, form):
+        # 保存前に追加の処理が必要な場合はここで行う
+        return super().form_valid(form)
+
+from django.views.generic import DeleteView
+from .models import Items
+from django.urls import reverse_lazy
+
+class ItemDeleteView(DeleteView):
+    model = Items
+    template_name = 'reservations/item_confirm_delete.html'  # 確認画面のテンプレート
+    success_url = reverse_lazy('menu')  # 削除後のリダイレクト先

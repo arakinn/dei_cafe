@@ -6,6 +6,7 @@
 {% if reservation %}
   <ul>
     <li><strong>予約番号:</strong> {{ reservation.id }}</li>
+    <li><strong>予約席数:</strong> {{ reservation.seat_count }}</li>
     <li><strong>代表者名:</strong> {{ reservation.customer_name }}</li>
     <li><strong>電話番号:</strong> {{ reservation.phone_number }}</li>
     <li><strong>予約日時:</strong> {{ reservation.start|date:"Y-m-d H:i" }} ~ {{ reservation.end|date:"H:i" }}</li>

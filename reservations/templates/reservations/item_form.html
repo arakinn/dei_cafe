@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% if item %}メニュー編集{% else %}メニュー新規作成{% endif %}</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">保存</button>
+    </form>
+    <br>
+    <a href="{% url 'menu_shop' %}">店舗用 メニュー画面に戻る</a>
+{% endblock %}

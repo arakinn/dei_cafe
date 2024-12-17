@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>メニュー一覧</h1>
+    <a href="{% url 'menu_create' %}">新規メニューを追加</a>
+    <br><br>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>並び順</th>
+                <th>名前</th>
+                <th>価格</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{ item.sort }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>
+                        <a href="{% url 'menu_edit' item.pk %}">編集</a> 
+                        <a href="{% url 'menu_delete' item.pk %}">削除</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="{% url 'menu_shop' %}">店舗用 メニュー画面に戻る</a>
+{% endblock %}
