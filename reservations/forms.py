@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.timezone import make_aware
 from datetime import timedelta, datetime
 from django.db import models
+import re
 
 class ReservationForm(forms.ModelForm):
     class Meta:
@@ -44,6 +45,7 @@ class ReservationForm(forms.ModelForm):
         seat_count = cleaned_data.get('seat_count')  # 予約席数
         start_time = cleaned_data.get('start')  # 開始時間
         is_preorder = cleaned_data.get('is_preorder')  # 事前注文の有無
+        phone_number = cleaned_data.get('phone_number')  # 電話番号
 
         # テイクアウトが選択されているのに時間が0以外の場合エラーを出す
         if is_eatin == 2 and hour != 0:  # テイクアウトの場合は時間を0時間に
@@ -68,25 +70,27 @@ class ReservationForm(forms.ModelForm):
 
             # 席数が残り席数を超えていないかチェック
             if seat_count > remaining_seats:
-                self.add_error(None, f"この時間帯の残り席数は {remaining_seats} 席です。席数を減らしてください。")
+                self.add_error('seat_count', f"この時間帯の残り席数は {remaining_seats} 席です。席数を減らしてください。")
         
             # 終了時間 (end) が17:00を超えている場合にエラーを追加
             if end_time.hour > 17:  # 終了時間が17時を超える場合
                 self.add_error('hour', 'ご利用終了時間は17時までに収めてください。')
 
-        # 事前注文の場合に注文が0の時エラー
-        if is_preorder == 1:  # 事前注文が選ばれている場合
-            # 注文数が全て0の時エラーを出す
-            items = cleaned_data.get('items')
-            if items and all(item.quantity == 0 for item in items):  # itemsがNoneでないことを確認
-                self.add_error('items', '事前注文が選ばれている場合、注文を1つ以上選択してください。')
+        # 注文の動的チェック
+        item_fields = [field for field in self.data if field.startswith('item_')]
+        total_quantity = sum(int(self.data.get(field, 0)) for field in item_fields)
 
-        # お店で注文の場合に注文が1以上の時エラー
-        if is_preorder == 2:  # お店で注文が選ばれている場合
-            # 注文数が1以上の時エラーを出す
-            items = cleaned_data.get('items')
-            if items and any(item.quantity > 0 for item in items):  # itemsがNoneでないことを確認
-                self.add_error('items', 'お店で注文の場合、注文は必要ありません。')
+        # 事前注文が選択されているのに注文が0の場合
+        if is_preorder == 1 and total_quantity == 0:
+            self.add_error('is_preorder', '事前注文が選ばれている場合、注文を1つ以上選択してください。')
+
+        # お店で注文が選択されているのに注文が1以上の場合
+        if is_preorder == 2 and total_quantity > 0:
+            self.add_error('is_preorder', 'お店で注文の場合、注文は必要ありません。')
+
+        # 電話番号が数字以外を含む場合にエラーを出す
+        if phone_number and not re.fullmatch(r'[0-9]+', phone_number):
+            self.add_error('phone_number', '電話番号は半角数字のみを入力してください。')
 
         return cleaned_data
 
@@ -123,22 +127,48 @@ class ReservationItemForm(forms.ModelForm):
         fields = ['item', 'quantity']
 
 class UserRegistrationForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
-    password_confirm = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}))
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Password'}),
+        help_text="半角英数字と記号のみ使用可能"
+    )
+    password_confirm = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Password 確認用'}),
+        help_text="確認のため、もう一度パスワードを入力してください"
+    )
 
     class Meta:
         model = User
         fields = ['username']  # username のみでフォームを作成
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+
+        # 半角英数字と記号のみ許可
+        if not re.fullmatch(r'[a-zA-Z0-9!@.+-_]+', username):
+            raise forms.ValidationError("ユーザー名は半角英数字と一部の記号のみ使用可能です。")
+        
+        return username
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        # 半角英数字と記号のみ許可
+        if not re.fullmatch(r'[a-zA-Z0-9!@.+-_]+', password):
+            raise forms.ValidationError("パスワードは半角英数字と一部の記号のみ使用可能です。")
+        
+        return password
 
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         password_confirm = cleaned_data.get("password_confirm")
 
-        if password != password_confirm:
+        # パスワード一致チェック
+        if password and password_confirm and password != password_confirm:
             raise forms.ValidationError("パスワードが一致しません。")
+        
         return cleaned_data
-
+    
 class ShopReservationForm(forms.ModelForm):
     class Meta:
         model = Reservation
@@ -173,6 +203,7 @@ class ShopReservationForm(forms.ModelForm):
         hour = cleaned_data.get('hour')  # 利用時間
         seat_count = cleaned_data.get('seat_count')  # 予約席数
         start_time = cleaned_data.get('start')  # 開始時間
+        is_preorder = cleaned_data.get('is_preorder')  # 事前注文の有無
 
         # テイクアウトが選択されているのに時間が0以外の場合エラーを出す
         if is_eatin == 2 and hour != 0:  # テイクアウトの場合は時間を0時間に
@@ -197,13 +228,25 @@ class ShopReservationForm(forms.ModelForm):
 
             # 席数が残り席数を超えていないかチェック
             if seat_count > remaining_seats:
-                self.add_error(None, f"この時間帯の残り席数は {remaining_seats} 席です。席数を減らしてください。")
+                self.add_error('seat_count', f"この時間帯の残り席数は {remaining_seats} 席です。席数を減らしてください。")
             
             # 終了時間 (end) が17:00を超えている場合にエラーを追加
             if start_time:
                 end_time = start_time + timedelta(hours=hour)
                 if end_time.hour > 17:  # 終了時間が17時を超える場合
                     self.add_error('hour', 'ご利用終了時間は17時までに収めてください。')
+                   
+        # 注文の動的チェック
+        item_fields = [field for field in self.data if field.startswith('item_')]
+        total_quantity = sum(int(self.data.get(field, 0)) for field in item_fields)
+
+        # 事前注文が選択されているのに注文が0の場合
+        if is_preorder == 1 and total_quantity == 0:
+            self.add_error('is_preorder', '事前注文が選ばれている場合、注文を1つ以上選択してください。')
+
+        # お店で注文が選択されているのに注文が1以上の場合
+        if is_preorder == 2 and total_quantity > 0:
+            self.add_error('is_preorder', 'お店で注文の場合、注文は必要ありません。')
 
         return cleaned_data
     

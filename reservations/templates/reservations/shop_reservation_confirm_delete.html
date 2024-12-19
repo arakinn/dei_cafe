@@ -17,11 +17,11 @@
     <li><strong>イートイン/テイクアウト:</strong> {{ reservation.get_is_eatin_display }}</li>
 </ul>
 
-<form action="{% url 'reservation_delete' reservation.id %}" method="post">
+<form action="{% url 'menu_shop_delete' reservation.id %}" method="post">
     {% csrf_token %}
     <button type="submit">キャンセルする</button>
 </form>
 <br>
-<a href="{% url 'reservation_list' %}?phone_number={{ reservation.phone_number }}">ご予約一覧に戻る</a>
+<a href="{% url 'menu_shop_list' %}">店舗側 全予約一覧に戻る</a>
 
 {% endblock %}

@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% block title %}ご予約完了{% endblock %}
 {% block content %}
-<h2>予約完了</h2>
-
+<h2>ご予約完了</h2>
+<p>ご予約ありがとうございます。ご来店をお待ちしております。</p>
 {% if reservation %}
   <ul>
     <li><strong>予約番号:</strong> {{ reservation.id }}</li>
@@ -23,11 +24,11 @@
     </ul>
 
     <!-- 金額の表示 -->
-    <h4>税抜き合計金額: ¥{{ total_excl_tax|floatformat:0|intcomma }}</h4>
-    <h4>消費税額(10%): +¥{{ tax_amount|floatformat:0|intcomma }}</h4>
-    <h4 style="color: green;">10%オフクーポン適用: -¥{{ discount_amount|floatformat:0|intcomma }}</h4>
+    <h4>税抜き合計金額: ¥{{ total_excl_tax|intcomma }}</h4>
+    <h4>消費税額(10%): +¥{{ tax_amount|intcomma }}</h4>
+    <h4 style="color: green;">10%オフクーポン適用: -¥{{ discount_amount|intcomma }}</h4>
     <h4>-------------------------</h4>
-    <h4>合計金額: ¥{{ total_incl_tax|floatformat:0|intcomma }}</h4>
+    <h4>合計金額: ¥{{ total_incl_tax|intcomma }}</h4>
     <p>お会計時にこの画面をスタッフにお見せください。</p>
   {% else %}
     <p>注文はありません。</p>

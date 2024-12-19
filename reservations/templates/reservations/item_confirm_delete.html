@@ -9,6 +9,7 @@
     <form method="post">
         {% csrf_token %}
         <button type="submit">削除</button>
-        <a href="{% url 'menu' %}">キャンセル</a>
+        <br><br>
+        <a href="{% url 'menu' %}">メニュー一覧に戻る</a>
     </form>
 {% endblock %}

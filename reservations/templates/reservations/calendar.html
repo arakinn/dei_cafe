@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
 
-{% block title %}カレンダー{% endblock %}
+{% block title %}空席確認カレンダー{% endblock %}
 {% block content %}
-<h1>空席確認</h1>
+<h1>空席確認カレンダー</h1>
 <p>{{ start_day }} - {{ end_day }}</p>
 <table style="table-layout: fixed; width: 80%;" border="1">
     <tr>
@@ -47,5 +47,6 @@
     {% endfor %}
 </table>
 <br>
+
 <a href="{% url 'menu_user' %}">メニュー画面に戻る</a>
 {% endblock %}

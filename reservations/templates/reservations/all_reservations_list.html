@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}全予約一覧{% endblock %}
+{% block title %}店舗側 全予約一覧{% endblock %}
 
 {% block content %}
-<h1>全予約一覧</h1>
+<h1>店舗側 全予約一覧</h1>
 
 {% if reservations %}
     <table border="1" style="width: 80%;">
@@ -35,8 +35,8 @@
                     <td>{{ reservation.remark }}</td>
                     <td>
                         <a href="{% url 'menu_shop_detail' pk=reservation.pk %}">詳細</a> 
-                        <a href="{% url 'reservation_edit' pk=reservation.pk %}">編集</a> 
-                        <a href="{% url 'reservation_delete' pk=reservation.pk %}">削除</a>
+                        <a href="{% url 'menu_shop_edit' pk=reservation.pk %}">編集</a> 
+                        <a href="{% url 'menu_shop_delete' pk=reservation.pk %}">キャンセル</a>
                     </td>
                 </tr>
             {% endfor %}

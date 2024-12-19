@@ -23,11 +23,11 @@
     </ul>
 
   <!-- 金額の表示 -->
-  <h4>税抜き合計金額: ¥{{ total_excl_tax|floatformat:0|intcomma }}</h4>
-  <h4>消費税額(10%): +¥{{ tax_amount|floatformat:0|intcomma }}</h4>
-  <h4 style="color: green;">10%オフクーポン: -¥{{ discount_amount|floatformat:0|intcomma }}</h4>
+  <h4>税抜き合計金額: ¥{{ total_excl_tax|intcomma }}</h4>
+  <h4>消費税額(10%): +¥{{ tax_amount|intcomma }}</h4>
+  <h4 style="color: green;">10%オフクーポン: -¥{{ discount_amount|intcomma }}</h4>
   <h4>-------------------------</h4>
-  <h4>合計金額: ¥{{ total_incl_tax|floatformat:0|intcomma }}</h4>
+  <h4>合計金額: ¥{{ total_incl_tax|intcomma }}</h4>
 {% else %}
   <p>注文はありません。</p>
 {% endif %}

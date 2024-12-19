@@ -19,7 +19,7 @@ from django.urls import path
 from reservations import views
 from django.contrib.auth.views import LoginView, LogoutView
 from reservations.views import LoginView
-from reservations.views import ReservationView, ReservationCompleteView, ReservationDetailView, ReservationDeleteView, AllReservationsListView, ShopReservationView, ShopReservationCompleteView, ItemListView, ItemCreateView, ItemUpdateView, ItemDeleteView
+from reservations.views import ReservationView, ReservationCompleteView, ReservationDetailView, ReservationDeleteView, AllReservationsListView, ShopReservationView, ShopReservationCompleteView, ItemListView, ItemCreateView, ItemUpdateView, ItemDeleteView, ShopReservationEditView, ShopReservationDeleteView
 
 urlpatterns = [
     #ここから顧客用
@@ -30,7 +30,7 @@ urlpatterns = [
     path('reserve/list/', views.ReservationListView.as_view(), name="reservation_list"),
     path('reserve/detail/<int:pk>/', ReservationDetailView.as_view(), name="reservation_detail"),
     path('reserve/edit/<int:pk>/', views.ReservationEditView.as_view(), name="reservation_edit"),
-    path('reserve/delete/<int:pk>/', ReservationDeleteView.as_view(), name="reservation_delete"),
+    path('reserve/delete/<int:pk>/', views.ReservationDeleteView.as_view(), name="reservation_delete"),
     path('calendar/', views.CalendarView.as_view(), name="calendar"),
     path('calendar/<int:year>/<int:month>/<int:day>/', views.CalendarView.as_view(), name="calendar"),
     path('reserve/<int:year>/<int:month>/<int:day>/<int:hour>/', views.ReservationView.as_view(), name="reserve"),
@@ -41,6 +41,8 @@ urlpatterns = [
     path('menu_shop/', views.MenuShopView.as_view(), name="menu_shop"),
     path('menu_shop/list/', views.AllReservationsListView.as_view(), name="menu_shop_list"),
     path('menu_shop/detail/<int:pk>/', views.ShopReservationDetailView.as_view(), name="menu_shop_detail"),
+    path('menu_shop/edit/<int:pk>/', views.ShopReservationEditView.as_view(), name="menu_shop_edit"),
+    path('menu_shop/delete/<int:pk>/', views.ShopReservationDeleteView.as_view(), name="menu_shop_delete"),
     path('menu_shop/calendar/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
     path('menu_shop/calendar/<int:year>/<int:month>/<int:day>/', views.ShopCalendarView.as_view(), name="menu_shop_calendar"),
     path('menu_shop/reserve/<int:year>/<int:month>/<int:day>/<int:hour>/',ShopReservationView.as_view(),name="menu_shop_reserve"),

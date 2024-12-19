@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
 {% load humanize %}
-{% block title %}予約詳細{% endblock %}
+{% block title %}ご予約詳細{% endblock %}
 
 {% block content %}
-<h1>予約詳細</h1>
+<h1>ご予約詳細</h1>
 
-<h3>予約情報</h3>
+<h3>ご予約情報</h3>
 <ul>
     <li><strong>予約番号:</strong> {{ reservation.id }}</li>
     <li><strong>代表者名:</strong> {{ reservation.customer_name }} 様</li>
@@ -22,16 +22,16 @@
 {% if reservation_details %}
   <ul>
     {% for item in reservation_details %}
-      <li>{{ item.name }} x {{ item.quantity }} (¥{{ item.total|floatformat:0|intcomma }})</li>
+      <li>{{ item.name }} x {{ item.quantity }} (¥{{ item.total|intcomma }})</li>
     {% endfor %}
   </ul>
 
   <!-- 金額の表示 -->
-  <h4>税抜き合計金額: ¥{{ total_excl_tax|floatformat:0|intcomma }}</h4>
-  <h4>消費税額(10%): +¥{{ tax_amount|floatformat:0|intcomma }}</h4>
-  <h4 style="color: green;">10%オフクーポン: -¥{{ discount_amount|floatformat:0|intcomma }}</h4>
+  <h4>税抜き合計金額: ¥{{ total_excl_tax|intcomma }}</h4>
+  <h4>消費税額(10%): +¥{{ tax_amount|intcomma }}</h4>
+  <h4 style="color: green;">10%オフクーポン: -¥{{ discount_amount|intcomma }}</h4>
   <h4>-------------------------</h4>
-  <h4>合計金額: ¥{{ total_incl_tax|floatformat:0|intcomma }}</h4>
+  <h4>合計金額: ¥{{ total_incl_tax|intcomma }}</h4>
 {% else %}
   <p>注文はありません。</p>
 {% endif %}

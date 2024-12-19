@@ -18,7 +18,7 @@ class Items(models.Model):
 
 class Reservation(models.Model):
     customer_name = models.CharField(max_length=60, verbose_name="代表者名")
-    phone_number = models.CharField(max_length=15, verbose_name="お電話番号")
+    phone_number = models.CharField(max_length=15, verbose_name="お電話番号（ハイフンなし）")
     hour = models.PositiveIntegerField(verbose_name="ご利用時間")
     start = models.DateTimeField(verbose_name="開始時間")
     end = models.DateTimeField(verbose_name="終了時間", null=True, blank=True)

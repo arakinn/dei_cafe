@@ -137,7 +137,7 @@ class ReservationEditView(LoginRequiredMixin, UpdateView):
 
 class ReservationDeleteView(LoginRequiredMixin, DeleteView):
     model = Reservation
-    success_url = reverse_lazy('reservation_list')
+    success_url = reverse_lazy('menu_user')
 
 class CalendarView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'reservations/calendar.html'
@@ -224,14 +224,7 @@ class ReservationView(LoginRequiredMixin, CreateView):
         context['items_fields'] = items_fields
         context['other_fields'] = other_fields
 
-        #席数が残り席数より多くてもエラーが出ない件デバッグ用
         form = context.get('form') 
-        #if form:　
-        #    print("フォームの内容:", form)
-        #    print("非フィールドエラー:", form.non_field_errors())
-        #    print("すべてのエラー:", form.errors)
-        #else:
-        #    print("フォームが context にありません。")
         return context
 
     def form_valid(self, form):
@@ -321,7 +314,7 @@ def register(request):
 # ここから店舗用
 ###################################################################################
 class StaffLoginView(LoginView):
-    template_name = 'reservations/staff_login.html'  # スタッフ用ログインページ
+    template_name = 'reservations/staff_login.html'
     form_class = AuthenticationForm
 
     def form_valid(self, form):
@@ -527,6 +520,42 @@ class ShopReservationDetailView(LoginRequiredMixin, TemplateView):
         })
 
         return context
+
+class ShopReservationEditView(LoginRequiredMixin, UpdateView):
+    model = Reservation
+    form_class = ReservationForm
+    template_name = 'reservations/shop_reservation_edit.html'
+
+    def get_object(self):
+        reservation_id = self.kwargs.get('pk')
+        return get_object_or_404(Reservation, id=reservation_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reservation = self.get_object()
+        reservation_items = reservation.items.all()
+        context['reservation_items'] = reservation_items
+        return context
+
+    def form_valid(self, form):
+        reservation = form.save(commit=False)
+
+        # 予約内容を保存
+        reservation.save()
+
+        # 既存の注文を削除（重複しないように）
+        reservation.items.all().delete()
+
+        # 注文メニューを保存（フォームから入力された数量を使って）
+        form.save_menus(reservation)
+
+        # 予約詳細ページへリダイレクト
+        return redirect('menu_shop_detail', pk=reservation.id)
+
+class ShopReservationDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = 'reservations/shop_reservation_confirm_delete.html'
+    model = Reservation
+    success_url = reverse_lazy('menu_shop_list')
 
 class ItemListView(ListView):
     model = Items

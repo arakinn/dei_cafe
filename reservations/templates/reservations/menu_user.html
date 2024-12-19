@@ -4,12 +4,12 @@
 <h1>dei Cafe メニュー画面</h1>
 <p>いらっしゃいませ</p>
 <h2>新規ご予約の方</h2>
-<a href="{% url 'calendar' %}">空席確認</a>
-<h2>予約確認・変更・キャンセルの方</h2>
+<a href="{% url 'calendar' %}">空席確認カレンダー</a>
+<h2>ご予約確認・変更・キャンセルの方</h2>
 お電話番号をご記入の上、「予約一覧」をクリックしてください。
 <form>
     <div>
-        <label for="phone_number">お電話番号</label>
+        <label for="phone_number">お電話番号（ハイフンなし、半角数字）</label>
         <input type="text" id="phone_number" name="phone_number" required>
         <button type="submit" formaction="{% url 'reservation_list' %}">予約一覧</button>
     </div>
