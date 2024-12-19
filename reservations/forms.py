@@ -145,6 +145,7 @@ class UserRegistrationForm(forms.ModelForm):
 
         # 半角英数字と記号のみ許可
         if not re.fullmatch(r'[a-zA-Z0-9!@.+-_]+', username):
+
             raise forms.ValidationError("ユーザー名は半角英数字と一部の記号のみ使用可能です。")
         
         return username
@@ -274,6 +275,19 @@ class ShopReservationForm(forms.ModelForm):
                     )
 
 class ItemForm(forms.ModelForm):
+    CATEGORY_CHOICES = [
+        ('軽食', '軽食'),
+        ('ホット', 'ホット'),
+        ('アイス', 'アイス'),
+    ]
+
+    # category をプルダウン形式で定義
+    category = forms.ChoiceField(
+        choices=CATEGORY_CHOICES,
+        widget=forms.Select,
+        label="カテゴリ",
+    )
+
     class Meta:
         model = Items
         fields = ['name', 'price', 'category', 'sort']

@@ -7,7 +7,7 @@
 <p>{{ start_day }} - {{ end_day }}</p>
 <table style="table-layout: fixed; width: 80%;" border="1">
     <tr>
-        <td><a href="{% url 'calendar' before.year before.month before.day %}">前週</a></td>
+        <td><a href="{% url 'menu_shop_calendar' before.year before.month before.day %}">前週</a></td>
         {% for day in days %}
             {% if day in public_holidays %}
                 <th style="color: green;">{{ day | date:"d(D)" }}</th>
@@ -19,7 +19,7 @@
                 <th>{{ day | date:"d(D)" }}</th>
             {% endif %}
         {% endfor %}
-        <td><a href="{% url 'calendar' next.year next.month next.day %}">次週</a></td>
+        <td><a href="{% url 'menu_shop_calendar' next.year next.month next.day %}">次週</a></td>
     </tr>
 
     {% for hour, schedules in calendar.items %}

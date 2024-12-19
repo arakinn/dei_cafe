@@ -562,6 +562,10 @@ class ItemListView(ListView):
     template_name = 'reservations/item_list.html'
     context_object_name = 'items'  # テンプレート内で使う変数名
 
+    def get_queryset(self):
+        # sort フィールドの昇順で並び替え
+        return Items.objects.all().order_by('sort')
+
 class ItemCreateView(CreateView):
     model = Items
     form_class = ItemForm  # 使用するフォーム
