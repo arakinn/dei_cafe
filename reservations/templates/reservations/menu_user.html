@@ -1,17 +1,35 @@
 {% extends 'base.html' %}
-{% block title %}dei Cafe メニュー画面{% endblock %}
+{% block title %}dei Café メニュー画面{% endblock %}
 {% block content %}
-<h1>dei Cafe メニュー画面</h1>
+<h1>dei Café メニュー画面</h1>
 <p>いらっしゃいませ</p>
 <h2>新規ご予約の方</h2>
 <a href="{% url 'calendar' %}">空席確認カレンダー</a>
 <h2>ご予約確認・変更・キャンセルの方</h2>
 お電話番号をご記入の上、「予約一覧」をクリックしてください。
-<form>
+<form id="reservation-form">
     <div>
         <label for="phone_number">お電話番号（ハイフンなし、半角数字）</label>
         <input type="text" id="phone_number" name="phone_number" required>
         <button type="submit" formaction="{% url 'reservation_list' %}">予約一覧</button>
+        <p id="error-message" style="color: red; display: none;">お電話番号は半角数字のみで入力してください。</p>
     </div>
 </form>
+
+<script>
+    document.getElementById('reservation-form').addEventListener('submit', function (event) {
+        const phoneNumberInput = document.getElementById('phone_number');
+        const errorMessage = document.getElementById('error-message');
+        const phoneNumber = phoneNumberInput.value;
+
+        // 半角数字以外が含まれている場合
+        if (!/^\d+$/.test(phoneNumber)) {
+            event.preventDefault(); // フォーム送信をキャンセル
+            errorMessage.style.display = 'block'; // エラーメッセージを表示
+            phoneNumberInput.focus(); // 入力欄にフォーカスを戻す
+        } else {
+            errorMessage.style.display = 'none'; // エラーメッセージを非表示
+        }
+    });
+</script>
 {% endblock %}

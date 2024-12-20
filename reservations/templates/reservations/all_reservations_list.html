@@ -10,11 +10,11 @@
         <thead>
             <tr>
                 <th>予約番号</th>
+                <th>予約席数</th>
                 <th>代表者名</th>
                 <th>電話番号</th>
                 <th>予約日時</th>
-                <th>終了時間</th>
-                <th>予約席数</th>
+                <th>終了時間</th>               
                 <th>事前注文</th>
                 <th>イートイン/テイクアウト</th>
                 <th>備考</th>
@@ -25,11 +25,11 @@
             {% for reservation in reservations %}
                 <tr>
                     <td>{{ reservation.id }}</td>
+                    <td>{{ reservation.seat_count }}</td>
                     <td>{{ reservation.customer_name }}</td>
                     <td>{{ reservation.phone_number }}</td>
                     <td>{{ reservation.start|date:"Y-m-d H:i" }}</td>
-                    <td>{{ reservation.end|date:"H:i" }}</td>
-                    <td>{{ reservation.seat_count }}</td>
+                    <td>{{ reservation.end|date:"H:i" }}</td>                   
                     <td>{{ reservation.get_is_preorder_display }}</td>
                     <td>{{ reservation.get_is_eatin_display }}</td>
                     <td>{{ reservation.remark }}</td>

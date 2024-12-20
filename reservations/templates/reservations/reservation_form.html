@@ -1,13 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}予約情報{% endblock %}
+{% block title %}ご予約情報{% endblock %}
 
 {% block content %}
 
-<form method="post">
+<form method="post" id="reservation-form">
     {% csrf_token %}
 
-    <!-- 非フィールドエラーを表示 -->
     {% if form.non_field_errors %}
         <p style="color: red;">
                 {% for error in form.non_field_errors %}
@@ -16,7 +15,7 @@
         </p>
     {% endif %}
 
-    <h3>予約情報</h3>
+    <h3>ご予約情報</h3>
     <p>テイクアウトの方はご利用時間を0にしてください。</p>
     <table>
         <tbody>
@@ -34,7 +33,7 @@
         </tbody>
     </table>
 
-    <h3>注文メニュー</h3>
+    <h3>ご注文メニュー</h3>
     <table>
         <thead>
             <tr>
@@ -46,7 +45,9 @@
             {% for field in items_fields %}
                 <tr>
                     <td>{{ field.label }}</td>
-                    <td>{{ field }}</td>
+                    <td>{{ field }}
+                        <div class="menu-error" style="color: red; display: none;">数量を入力してください。</div>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -56,4 +57,28 @@
 </form>
 <br>
 <a href="{% url 'calendar' %}">空席確認カレンダーに戻る</a>
+
+<script>
+    document.getElementById("reservation-form").addEventListener("submit", function(event) {
+        let hasError = false;
+
+        // 対象のメニューフィールドをすべて取得
+        const menuFields = document.querySelectorAll("input[name^='item_']");
+        menuFields.forEach(field => {
+            const errorDiv = field.nextElementSibling; // エラーメッセージ表示用の要素
+            if (!field.value || isNaN(field.value) || parseInt(field.value) < 0) {
+                hasError = true;
+                errorDiv.style.display = "block"; // エラーを表示
+            } else {
+                errorDiv.style.display = "none"; // エラーを非表示
+            }
+        });
+
+        // エラーがあればフォーム送信を停止
+        if (hasError) {
+            event.preventDefault();
+        }
+    });
+</script>
+
 {% endblock %}

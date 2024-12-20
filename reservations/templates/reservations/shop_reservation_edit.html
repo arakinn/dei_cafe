@@ -4,29 +4,61 @@
 
 {% block content %}
 <h1>ご予約変更</h1>
-<form method="post">
+<form method="post" id="reservation-form">
     {% csrf_token %}
-<table>
-    <tbody>
-        <!-- フィールドごとのエラー表示 -->
-        {% for field in form %}
-            <tr>
-                <th style="font-weight: normal; font-size: 1rem; text-align: left;">{{ field.label_tag }}</th>
-                <td>
-                    {{ field }}
-                    {% if field.errors %}
-                        <div style="color: red;">
-                            {{ field.errors }}
-                        </div>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table>
+        <tbody>
+            {% for field in form %}
+                <tr>
+                    <th style="font-weight: normal; font-size: 1rem; text-align: left;">{{ field.label_tag }}</th>
+                    <td>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div style="color: red;">
+                                {{ field.errors }}
+                            </div>
+                        {% else %}
+                            <!-- JavaScript 用のエラーメッセージ要素 -->
+                            <div class="js-error" style="color: red; display: none;">数量を入力してください。</div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <button type="submit">保存</button>
 </form>
 <br>
 <a href="{% url 'menu_shop_list' %}">店舗側 全予約一覧に戻る</a>
+
+<script>
+    document.getElementById("reservation-form").addEventListener("submit", function(event) {
+        let hasError = false;
+
+        // 全ての入力フィールドを取得（textarea は除外）
+        const fields = document.querySelectorAll("#reservation-form input, #reservation-form select");
+
+        fields.forEach(field => {
+            // エラー表示用の要素を取得
+            const errorDiv = field.parentElement.querySelector(".js-error");
+
+            if (!field.value.trim()) { // 値が空または空白の場合
+                hasError = true;
+                if (errorDiv) {
+                    errorDiv.style.display = "block"; // エラーを表示
+                }
+            } else {
+                if (errorDiv) {
+                    errorDiv.style.display = "none"; // エラーを非表示
+                }
+            }
+        });
+
+        // エラーがあればフォーム送信を停止
+        if (hasError) {
+            event.preventDefault();
+        }
+    });
+</script>
 
 {% endblock %}

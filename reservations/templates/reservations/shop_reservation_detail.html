@@ -8,14 +8,14 @@
 
 <h3>ご予約情報</h3>
 <ul>
-    <li><strong>予約番号:</strong> {{ reservation.id }}</li>
-    <li><strong>代表者名:</strong> {{ reservation.customer_name }} 様</li>
-    <li><strong>電話番号:</strong> {{ reservation.phone_number }}</li>
-    <li><strong>お時間:</strong> {{ reservation.start|date:"Y-m-d H:i" }} ~ {{ reservation.end|date:"H:i" }}</li>
-    <li><strong>備考:</strong> {{ reservation.remark }}</li>
-    <li><strong>事前注文:</strong> {{ reservation.get_is_preorder_display }}</li>
-    <li><strong>イートイン/テイクアウト:</strong> {{ reservation.get_is_eatin_display }}</li>
-    <li><strong>予約席数:</strong> {{ reservation.seat_count }}席</li>
+  <li><strong>予約番号:</strong> {{ reservation.id }}</li>
+  <li><strong>予約席数:</strong> {{ reservation.seat_count }}席</li>
+  <li><strong>代表者名:</strong> {{ reservation.customer_name }} 様</li>
+  <li><strong>電話番号:</strong> {{ reservation.phone_number }}</li>
+  <li><strong>お時間:</strong> {{ reservation.start|date:"Y-m-d H:i" }} ~ {{ reservation.end|date:"H:i" }}</li>
+  <li><strong>備考:</strong> {{ reservation.remark }}</li>
+  <li><strong>事前注文:</strong> {{ reservation.get_is_preorder_display }}</li>
+  <li><strong>イートイン/テイクアウト:</strong> {{ reservation.get_is_eatin_display }}</li>
 </ul>
 
 <h3>注文したメニュー</h3>
@@ -36,5 +36,5 @@
   <p>注文はありません。</p>
 {% endif %}
 <br>
-<a href="{% url 'menu_shop_list' %}">店舗側 予約一覧に戻る</a>
+<a href="{% url 'menu_shop_list' %}">店舗側 全予約一覧に戻る</a>
 {% endblock %}

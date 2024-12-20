@@ -9,7 +9,7 @@
 <div>
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
-        <input class="nav-link" type="submit" value="ログアウト">
+        <input type="submit" value="ログアウト">
     </form>
 </div>
 {% block content %}

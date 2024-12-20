@@ -15,7 +15,7 @@ from django.utils.timezone import now
 from .models import Reservation, ReservationItem, Items
 from django.views import generic
 from django.conf import settings
-from .forms import ReservationForm, ReservationItemForm, ShopReservationForm, ItemForm
+from .forms import ReservationForm, ItemForm, ShopReservationForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
@@ -23,7 +23,6 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import UserRegistrationForm
 from django.http import HttpResponseForbidden
-from django.forms import modelformset_factory, inlineformset_factory
 from django.views import View
 from django.db import models
 
@@ -230,24 +229,13 @@ class ReservationView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         reservation = form.save(commit=False)
         reservation.end = reservation.start + timedelta(hours=reservation.hour)
-
-        # 同時間帯の予約済み座席数を計算
-        total_reserved_seats = Reservation.objects.filter(
-            start__lt=reservation.end,
-            end__gt=reservation.start
-        ).aggregate(Sum('seat_count'))['seat_count__sum'] or 0
-
-        if total_reserved_seats + reservation.seat_count > 8:
-            form.add_error(None, "この時間帯の席数が不足しています。")  # 非フィールドエラーを追加
-            return self.form_invalid(form)  # 必ず form_invalid を呼ぶ
-
+        
         reservation.save()
         form.save_menus(reservation)
 
         return redirect(reverse('complete') + f'?reservation_id={reservation.id}')
     
     def form_invalid(self, form):
-
         # フォームエラーをコンテキストに渡す
         return self.render_to_response(self.get_context_data(form=form))
 
@@ -429,17 +417,7 @@ class ShopReservationView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         reservation = form.save(commit=False)
         reservation.end = reservation.start + timedelta(hours=reservation.hour)
-
-        # 同時間帯の予約済み座席数を計算
-        total_reserved_seats = Reservation.objects.filter(
-            start__lt=reservation.end,
-            end__gt=reservation.start
-        ).aggregate(Sum('seat_count'))['seat_count__sum'] or 0
-
-        if total_reserved_seats + reservation.seat_count > 8:
-            form.add_error(None, "この時間帯の席数が不足しています。")
-            return self.form_invalid(form)
-
+        
         reservation.save()
         form.save_menus(reservation)
 
@@ -557,7 +535,7 @@ class ShopReservationDeleteView(LoginRequiredMixin, DeleteView):
     model = Reservation
     success_url = reverse_lazy('menu_shop_list')
 
-class ItemListView(ListView):
+class ItemListView(LoginRequiredMixin, ListView):
     model = Items
     template_name = 'reservations/item_list.html'
     context_object_name = 'items'  # テンプレート内で使う変数名
@@ -566,7 +544,7 @@ class ItemListView(ListView):
         # sort フィールドの昇順で並び替え
         return Items.objects.all().order_by('sort')
 
-class ItemCreateView(CreateView):
+class ItemCreateView(LoginRequiredMixin, CreateView):
     model = Items
     form_class = ItemForm  # 使用するフォーム
     template_name = 'reservations/item_form.html'
@@ -576,7 +554,7 @@ class ItemCreateView(CreateView):
         # 保存前に追加の処理が必要な場合はここで行う
         return super().form_valid(form)
 
-class ItemUpdateView(UpdateView):
+class ItemUpdateView(LoginRequiredMixin, UpdateView):
     model = Items
     form_class = ItemForm
     template_name = 'reservations/item_form.html'
