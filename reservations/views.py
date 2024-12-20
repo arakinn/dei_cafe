@@ -384,7 +384,7 @@ class ShopCalendarView(LoginRequiredMixin, generic.TemplateView):
 
 class ShopReservationView(LoginRequiredMixin, CreateView):
     template_name = 'reservations/shop_reservation_form.html'
-    form_class = ShopReservationForm
+    form_class = ShopReservationForm #店舗用フォームを指定
     model = Reservation
 
     def get_initial(self):
