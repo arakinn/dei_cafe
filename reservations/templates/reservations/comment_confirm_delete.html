@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}お知らせ削除確認{% endblock %}
+
+{% block content %}
+<h1>お知らせ削除確認</h1>
+<p>このお知らせを削除してもよろしいですか？</p>
+<blockquote>
+    {{ object.content }} ({{ comment.created_at|date:"Y-m-d H:i" }}) 
+</blockquote>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">削除する</button>
+    <a href="{% url 'comment_manage' %}">キャンセル</a>
+</form>
+{% endblock %}

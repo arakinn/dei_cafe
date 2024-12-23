@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Reservation, Items, ReservationItem
+from .models import Reservation, Items, ReservationItem, Comment
 
 # ReservationItem をインライン表示する設定
 class ReservationItemInline(admin.TabularInline):
@@ -17,7 +17,11 @@ class ItemsAdmin(admin.ModelAdmin):
 class ReservationItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'reservation', 'item', 'quantity')
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('content', 'created_at')
+
 # モデルを管理サイトに登録
 admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(Items, ItemsAdmin)
 admin.site.register(ReservationItem, ReservationItemAdmin)
+admin.site.register(Comment, CommentAdmin)

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Reservation, ReservationItem, Items
+from .models import Reservation, ReservationItem, Items, Comment
 from django.core.exceptions import ValidationError
 from django.utils.timezone import make_aware
 from datetime import timedelta, datetime
@@ -301,3 +301,14 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Items
         fields = ['name', 'price', 'category', 'sort']
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': '一言コメントを入力してください'}),
+        }
+        labels = {
+            'content': 'お知らせ内容',
+        }

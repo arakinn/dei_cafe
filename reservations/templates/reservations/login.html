@@ -14,6 +14,15 @@
     <input type="submit" value="ログイン">
 </form>
 <br>
+<h2>dei Café からのお知らせ</h2>
+<ul>
+    {% for comment in comments %}
+        <li>{{ comment.content }} ({{ comment.created_at|date:"Y-m-d" }})</li>
+    {% empty %}
+        <p>まだコメントがありません。</p>
+    {% endfor %}
+</ul>
+<br>
 <a href="{% url 'staff_login' %}">スタッフ ログイン</a>
 </body>
 </html>

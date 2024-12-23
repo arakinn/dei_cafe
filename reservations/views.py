@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 from typing import Any
 from django.shortcuts import render
+from django.core.paginator import Paginator
 from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.views import LoginView, LogoutView
@@ -12,10 +13,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
 from django.utils.timezone import now
-from .models import Reservation, ReservationItem, Items
+from .models import Reservation, ReservationItem, Items, Comment
 from django.views import generic
 from django.conf import settings
-from .forms import ReservationForm, ItemForm, ShopReservationForm
+from .forms import ReservationForm, ItemForm, ShopReservationForm, CommentForm
 from django.core.exceptions import ValidationError
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
@@ -25,6 +26,7 @@ from .forms import UserRegistrationForm
 from django.http import HttpResponseForbidden
 from django.views import View
 from django.db import models
+from django.contrib.messages.views import SuccessMessageMixin
 
 # Create your views here.
 ###################################################################################
@@ -33,6 +35,11 @@ from django.db import models
 class LoginView(LoginView):
     form_class = AuthenticationForm
     template_name = 'reservations/login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = Comment.objects.all().order_by('-created_at')[:3]  # 最新3件を表示
+        return context
 
 
 class LogoutView(LogoutView):
@@ -568,3 +575,34 @@ class ItemDeleteView(DeleteView):
     model = Items
     template_name = 'reservations/item_confirm_delete.html'  # 確認画面のテンプレート
     success_url = reverse_lazy('menu')  # 削除後のリダイレクト先
+
+
+class CommentManageView(LoginRequiredMixin, ListView):
+    model = Comment
+    template_name = 'reservations/comment_manage.html'
+    paginate_by = 5  # 1ページあたり5件表示
+    context_object_name = 'comments'
+    ordering = ['-created_at']  # 最新順に表示
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('comment_manage')  # 自分自身のページへリダイレクト
+        return self.get(request)
+
+
+class CommentDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    model = Comment
+    template_name = 'reservations/comment_confirm_delete.html'
+    success_url = reverse_lazy('comment_manage')  # 削除後にリダイレクト
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = self.object  # コメントデータをテンプレートに渡す
+        return context

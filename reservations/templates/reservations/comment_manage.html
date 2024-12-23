@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}お店からのお知らせ管理{% endblock %}
+
+{% block content %}
+<h1>お店からのお知らせ管理</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">お知らせを追加</button>
+</form>
+
+<h2>お店からのお知らせ一覧</h2>
+<ul>
+    {% for comment in comments %}
+        <li>{{ comment.content }} ({{ comment.created_at|date:"Y-m-d H:i" }}) <a href="{% url 'comment_delete' comment.id %}">削除</a></li>
+    {% endfor %}
+</ul>
+{#ページの表示#}
+{{ page_obj.number }} / {{page_obj.paginator.num_pages}} ページ <br>
+{# 前へ #}
+{% if page_obj.has_previous %}
+<a href="?page=1">&laquo; 先頭</a>
+<a href="?page={{ page_obj.previous_page_number }}">前へ</a>
+{% endif %}
+
+{# 次へ #}
+{% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}">次へ</a>
+<a href="?page={{ page_obj.paginator.num_pages}}">最後 &raquo;</a>
+{% endif %}
+<br>
+<br>
+<a href="{% url 'menu_shop' %}">店舗用 メニュー画面に戻る</a>
+{% endblock %}

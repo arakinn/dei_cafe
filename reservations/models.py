@@ -42,3 +42,11 @@ class ReservationItem(models.Model):
 
     def __str__(self):
         return f"{self.item.name} x {self.quantity}"
+
+
+class Comment(models.Model):
+    content = models.TextField(max_length=200, verbose_name="お知らせ内容")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日")
+
+    def __str__(self):
+        return self.content[:50]  # コメントの最初の50文字を表示
