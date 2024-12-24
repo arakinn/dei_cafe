@@ -12,9 +12,11 @@ class Items(models.Model):
     name = models.CharField(max_length=200, verbose_name="品名")
     price = models.IntegerField(verbose_name="価格（税抜）")
     sort = models.IntegerField(verbose_name="ソート用")
+    order_deadline = models.DateField(blank=True, null=True, verbose_name="注文期限")
 
     def __str__(self):
         return self.name
+
 
 class Reservation(models.Model):
     customer_name = models.CharField(max_length=60, verbose_name="代表者名")
@@ -34,6 +36,7 @@ class Reservation(models.Model):
         if self.start and self.hour:
             self.end = self.start + timedelta(hours=self.hour)
         super().save(*args, **kwargs)
+
 
 class ReservationItem(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="items")

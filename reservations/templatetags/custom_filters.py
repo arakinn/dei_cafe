@@ -12,3 +12,10 @@ def multiply(value, arg):
         return value * arg
     except (ValueError, TypeError):
         return ''
+
+@register.filter
+def to_int(value):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None

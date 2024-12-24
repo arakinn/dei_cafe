@@ -13,6 +13,7 @@
                 <th>カテゴリ</th>
                 <th>名前</th>
                 <th>価格</th>
+                <th>注文期限</th>
                 <th>アクション</th>
             </tr>
         </thead>
@@ -23,6 +24,7 @@
                     <td>{{ item.category }}</td>
                     <td>{{ item.name }}</td>
                     <td>{{ item.price }}</td>
+                    <td>{{ item.order_deadline }}</td>
                     <td>
                         <a href="{% url 'menu_edit' item.pk %}">編集</a> 
                         <a href="{% url 'menu_delete' item.pk %}">削除</a>

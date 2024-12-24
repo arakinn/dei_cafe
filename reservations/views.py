@@ -36,6 +36,7 @@ class LoginView(LoginView):
     form_class = AuthenticationForm
     template_name = 'reservations/login.html'
 
+    # 店舗からのお知らせ表示
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['comments'] = Comment.objects.all().order_by('-created_at')[:3]  # 最新3件を表示
@@ -110,6 +111,7 @@ class ReservationDetailView(LoginRequiredMixin, TemplateView):
 
         return context
 
+
 class ReservationEditView(LoginRequiredMixin, UpdateView):
     model = Reservation
     form_class = ReservationForm
@@ -141,9 +143,11 @@ class ReservationEditView(LoginRequiredMixin, UpdateView):
         # 予約詳細ページへリダイレクト
         return redirect('reservation_detail', pk=reservation.id)
 
+
 class ReservationDeleteView(LoginRequiredMixin, DeleteView):
     model = Reservation
     success_url = reverse_lazy('menu_user')
+
 
 class CalendarView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'reservations/calendar.html'
@@ -335,6 +339,7 @@ class AllReservationsListView(LoginRequiredMixin, ListView):
         one_hour_ago = now() - timedelta(hours=2)  # 現在時刻から2時間前
         return Reservation.objects.filter(start__gte=one_hour_ago).order_by('start')
 
+
 class ShopCalendarView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'reservations/shop_calendar.html'
 
@@ -389,6 +394,7 @@ class ShopCalendarView(LoginRequiredMixin, generic.TemplateView):
 
         return context
 
+
 class ShopReservationView(LoginRequiredMixin, CreateView):
     template_name = 'reservations/shop_reservation_form.html'
     form_class = ShopReservationForm #店舗用フォームを指定
@@ -430,6 +436,7 @@ class ShopReservationView(LoginRequiredMixin, CreateView):
 
         return redirect(reverse('menu_shop_complete') + f'?reservation_id={reservation.id}')
 
+
 class ShopReservationCompleteView(LoginRequiredMixin, TemplateView):
     template_name = 'reservations/shop_reservation_complete.html'
 
@@ -466,6 +473,7 @@ class ShopReservationCompleteView(LoginRequiredMixin, TemplateView):
         })
 
         return context
+
 
 class ShopReservationDetailView(LoginRequiredMixin, TemplateView):
     template_name = "reservations/shop_reservation_detail.html"
@@ -506,9 +514,10 @@ class ShopReservationDetailView(LoginRequiredMixin, TemplateView):
 
         return context
 
+
 class ShopReservationEditView(LoginRequiredMixin, UpdateView):
     model = Reservation
-    form_class = ReservationForm
+    form_class = ShopReservationForm
     template_name = 'reservations/shop_reservation_edit.html'
 
     def get_object(self):
@@ -537,10 +546,12 @@ class ShopReservationEditView(LoginRequiredMixin, UpdateView):
         # 予約詳細ページへリダイレクト
         return redirect('menu_shop_detail', pk=reservation.id)
 
+
 class ShopReservationDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'reservations/shop_reservation_confirm_delete.html'
     model = Reservation
     success_url = reverse_lazy('menu_shop_list')
+
 
 class ItemListView(LoginRequiredMixin, ListView):
     model = Items
@@ -555,21 +566,20 @@ class ItemCreateView(LoginRequiredMixin, CreateView):
     model = Items
     form_class = ItemForm  # 使用するフォーム
     template_name = 'reservations/item_form.html'
-    success_url = '/menu/'  # 成功後のリダイレクト先
+    success_url = '/menu/'  # 作成後のリダイレクト先
 
-    def form_valid(self, form):
-        # 保存前に追加の処理が必要な場合はここで行う
-        return super().form_valid(form)
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['order_deadline'] = timezone.now().date()
+        return initial
+
 
 class ItemUpdateView(LoginRequiredMixin, UpdateView):
     model = Items
     form_class = ItemForm
-    template_name = 'reservations/item_form.html'
+    template_name = 'reservations/item_edit.html'
     success_url = '/menu/'  # 編集後のリダイレクト先
 
-    def form_valid(self, form):
-        # 保存前に追加の処理が必要な場合はここで行う
-        return super().form_valid(form)
 
 class ItemDeleteView(DeleteView):
     model = Items

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import Reservation, ReservationItem, Items, Comment
 from django.core.exceptions import ValidationError
 from django.utils.timezone import make_aware
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from django.db import models
 import re
 
@@ -91,6 +91,23 @@ class ReservationForm(forms.ModelForm):
         # 電話番号が数字以外を含む場合にエラーを出す
         if phone_number and not re.fullmatch(r'[0-9]+', phone_number):
             self.add_error('phone_number', '電話番号は半角数字のみを入力してください。')
+        
+        # 商品の注文期限チェック
+        if is_preorder == 1 and start_time:  # 事前注文で予約日がある場合のみチェック
+            reservation_date = start_time.date()  # `start` は日時なので日付部分を取得
+
+            for field_name, value in self.data.items():
+                if field_name.startswith('item_'):
+                    try:
+                        item_id = int(field_name.split('_')[1])
+                        item = Items.objects.get(id=item_id)
+                        quantity = int(value) if value else 0
+
+                        # 注文期限が設定されていて、予約日が注文期限を超えていた場合エラー
+                        if quantity > 0 and item.order_deadline and reservation_date > item.order_deadline:
+                            self.add_error(None, f"{item.name} の注文期限は {item.order_deadline} までです。")
+                    except (ValueError, Items.DoesNotExist):
+                        continue
 
         return cleaned_data
 
@@ -197,7 +214,6 @@ class ShopReservationForm(forms.ModelForm):
     
      
     def clean(self):
-        print("Form data:", self.data)  # フォームデータを表示
         cleaned_data = super().clean()
         is_eatin = cleaned_data.get('is_eatin')  # イートイン/テイクアウトの選択肢
         hour = cleaned_data.get('hour')  # 利用時間
@@ -259,6 +275,23 @@ class ShopReservationForm(forms.ModelForm):
         if phone_number and not re.fullmatch(r'[0-9]+', phone_number):
             self.add_error('phone_number', '電話番号は半角数字のみを入力してください。')
 
+        # 商品の注文期限チェック
+        if is_preorder == 1 and start_time:  # 事前注文で予約日がある場合のみチェック
+            reservation_date = start_time.date()  # `start` は日時なので日付部分を取得
+
+            for field_name, value in self.data.items():
+                if field_name.startswith('item_'):
+                    try:
+                        item_id = int(field_name.split('_')[1])
+                        item = Items.objects.get(id=item_id)
+                        quantity = int(value) if value else 0
+
+                        # 注文期限が設定されていて、予約日が注文期限を超えていた場合エラー
+                        if quantity > 0 and item.order_deadline and reservation_date > item.order_deadline:
+                            self.add_error(None, f"{item.name} の注文期限は {item.order_deadline} までです。")
+                    except (ValueError, Items.DoesNotExist):
+                        continue
+                    
         return cleaned_data
 
     def save(self, commit=True):
@@ -300,14 +333,14 @@ class ItemForm(forms.ModelForm):
 
     class Meta:
         model = Items
-        fields = ['name', 'price', 'category', 'sort']
+        fields = ['name', 'price', 'category', 'sort', 'order_deadline']
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['content']
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': '一言コメントを入力してください'}),
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'お店からのお知らせを入力してください'}),
         }
         labels = {
             'content': 'お知らせ内容',
