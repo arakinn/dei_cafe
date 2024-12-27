@@ -68,7 +68,7 @@ class ReservationListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['phone_number'] = self.request.GET.get('phone_number', '')  # テンプレートに電話番号を渡す
+        context['phone_number'] = self.request.GET.get('phone_number', '')
         return context
 
 
@@ -147,6 +147,16 @@ class ReservationEditView(LoginRequiredMixin, UpdateView):
 class ReservationDeleteView(LoginRequiredMixin, DeleteView):
     model = Reservation
     success_url = reverse_lazy('menu_user')
+
+    def dispatch(self, request, *args, **kwargs):
+        reservation = self.get_object()
+        current_time = now()
+        
+        # 当日0時以降の場合、削除を禁止
+        if reservation.start.date() == current_time.date() and current_time.hour >= 0:
+            return HttpResponseForbidden('当日のご予約はキャンセルできません。')
+        
+        return super().dispatch(request, *args, **kwargs)
 
 
 class CalendarView(LoginRequiredMixin, generic.TemplateView):
@@ -551,6 +561,16 @@ class ShopReservationDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'reservations/shop_reservation_confirm_delete.html'
     model = Reservation
     success_url = reverse_lazy('menu_shop_list')
+
+#    def dispatch(self, request, *args, **kwargs):
+#        reservation = self.get_object()
+#        current_time = now()
+#        
+#        # 当日0時以降の場合、削除を禁止
+#        if reservation.start.date() == current_time.date() and current_time.hour >= 0:
+#            return HttpResponseForbidden('当日のご予約はキャンセルできません。')
+#        
+#        return super().dispatch(request, *args, **kwargs)
 
 
 class ItemListView(LoginRequiredMixin, ListView):

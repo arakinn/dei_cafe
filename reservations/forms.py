@@ -4,6 +4,7 @@ from .models import Reservation, ReservationItem, Items, Comment
 from django.core.exceptions import ValidationError
 from django.utils.timezone import make_aware
 from datetime import timedelta, datetime, date
+from django.utils.timezone import now
 from django.db import models
 import re
 
@@ -18,6 +19,10 @@ class ReservationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['hour'].widget = forms.Select(choices=((0, "0時間"), (1, "1時間"), (2, "2時間")))
+
+        # seat_count を読み取り専用にする
+        if self.instance and self.instance.pk:
+            self.fields['seat_count'].widget.attrs['readonly'] = True
 
         # メニュー項目を動的に追加
         items = Items.objects.all().order_by('sort')  # メニューを並べ替え
@@ -109,9 +114,22 @@ class ReservationForm(forms.ModelForm):
                     except (ValueError, Items.DoesNotExist):
                         continue
 
+        # 当日0時以降の予約変更を禁止
+        if start_time:
+            current_time = now()
+            if start_time.date() == current_time.date() and current_time.hour >= 0:
+                self.add_error(None, '当日のご予約は変更できません。')
+
         return cleaned_data
 
-
+    def clean_seat_count(self):
+        if self.instance and self.instance.pk:
+            # 既存の seat_count を取得し、変更されていた場合はエラー
+            original_seat_count = self.instance.seat_count
+            new_seat_count = self.cleaned_data.get('seat_count')
+            if new_seat_count != original_seat_count:
+                raise forms.ValidationError('予約人数は変更できません。')
+        return self.cleaned_data.get('seat_count')
 
     def save(self, commit=True):
         reservation = super().save(commit=False)
@@ -156,7 +174,6 @@ class UserRegistrationForm(forms.ModelForm):
 
         # 半角英数字と記号のみ許可
         if not re.fullmatch(r'[a-zA-Z0-9!@.+-_]+', username):
-
             raise forms.ValidationError("ユーザー名は半角英数字と一部の記号のみ使用可能です。")
         
         return username
@@ -291,7 +308,13 @@ class ShopReservationForm(forms.ModelForm):
                             self.add_error(None, f"{item.name} の注文期限は {item.order_deadline} までです。")
                     except (ValueError, Items.DoesNotExist):
                         continue
-                    
+
+        # 当日0時以降の予約変更を禁止
+#        if start_time:
+#            current_time = now()
+#            if start_time.date() == current_time.date() and current_time.hour >= 0:
+#                self.add_error(None, '当日のご予約は変更できません。')
+
         return cleaned_data
 
     def save(self, commit=True):

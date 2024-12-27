@@ -31,8 +31,8 @@
                     </td>
                     <td>{{ reservation.seat_count }}</td>
                     <td>
-                        <a href="{% url 'reservation_detail' pk=reservation.pk %}">詳細</a> 
-                        <a href="{% url 'reservation_edit' pk=reservation.pk %}">変更</a> 
+                        <a href="{% url 'reservation_detail' pk=reservation.pk %}">詳細</a>
+                        <a href="{% url 'reservation_edit' pk=reservation.pk %}">変更</a>
                         <a href="{% url 'reservation_delete' pk=reservation.pk %}">キャンセル</a>
                     </td>
                 </tr>

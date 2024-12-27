@@ -11,9 +11,9 @@
 
     {% if form.non_field_errors %}
         <p style="color: red;">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
         </p>
     {% endif %}
 
@@ -25,7 +25,12 @@
                 <tr>
                     <th>{{ field.label_tag }}</th>
                     <td>
-                        {{ field }}
+                        {% if field.name == 'seat_count' %}
+                            <!-- seat_countを読み取り専用にする -->
+                            <input type="number" name="seat_count" value="{{ field.value }}" readonly>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
                         {% for error in field.errors %}
                             <div style="color: red;">{{ error }}</div>
                         {% endfor %}
@@ -47,7 +52,8 @@
             {% for field in items_fields %}
                 <tr>
                     <td>{{ field.label }}</td>
-                    <td>{{ field }}
+                    <td>
+                        {{ field }}
                         <div class="menu-error" style="color: red; display: none;">数量を入力してください。</div>
                     </td>
                 </tr>

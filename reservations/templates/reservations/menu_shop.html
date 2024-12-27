@@ -5,6 +5,7 @@
 {% block content %}
 <h1>dei Café 店舗用メニュー</h1>
 <p>ここはスタッフ専用のページです。</p>
+
 <a href="{% url 'menu_shop_list' %}">全予約一覧</a>
 <br>
 <a href="{% url 'menu_shop_calendar' %}">空席確認カレンダー</a>
@@ -12,5 +13,6 @@
 <a href="{% url 'menu' %}">メニュー変更</a>
 <br>
 <a href="{% url 'comment_manage' %}">お店からのお知らせ管理</a>
+
 
 {% endblock %}

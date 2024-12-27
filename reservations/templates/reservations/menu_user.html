@@ -22,7 +22,7 @@
         const errorMessage = document.getElementById('error-message');
         const phoneNumber = phoneNumberInput.value;
 
-        // 半角数字以外が含まれている場合
+        // 電話番号に半角数字以外が含まれている場合
         if (!/^\d+$/.test(phoneNumber)) {
             event.preventDefault(); // フォーム送信をキャンセル
             errorMessage.style.display = 'block'; // エラーメッセージを表示
